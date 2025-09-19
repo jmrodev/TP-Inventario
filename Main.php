@@ -17,7 +17,8 @@ $db->addRepuesto($repuestoMoto);
 $opcionesMenuPrincipal = [
     1 => 'Añadir Repuesto',
     2 => 'Listar Repuestos',
-    3 => 'Salir'
+    3 => 'Buscar Repuesto por Nombre',
+    4 => 'Salir'
 ];
 
 // Crear una instancia del menú
