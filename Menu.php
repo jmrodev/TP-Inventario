@@ -12,7 +12,6 @@ class Menu {
     public function mostrar() {
       echo PHP_EOL . "--------------------------------------
         " . PHP_EOL;
-      
       echo " --- " . $this->titulo . " ---
        " . PHP_EOL ;
         foreach ($this->opciones as $numero => $descripcion) {
@@ -32,6 +31,10 @@ class Menu {
         if (array_key_exists($seleccion, $this->opciones)) {
             $descripcion = $this->opciones[$seleccion];
 
+            if ($descripcion !== 'Añadir repuesto'){
+
+              echo "añadir repuesto";
+            } 
             echo "Ha seleccionado: " . $descripcion . " ". PHP_EOL;
             echo $seleccion . PHP_EOL;
 
