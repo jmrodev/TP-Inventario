@@ -10,15 +10,16 @@ class Menu {
     }
 
     public function mostrar() {
-        echo "
---- " . $this->titulo . " ---
-";
+      echo PHP_EOL . "--------------------------------------
+        " . PHP_EOL;
+      
+      echo " --- " . $this->titulo . " ---
+       " . PHP_EOL ;
         foreach ($this->opciones as $numero => $descripcion) {
-            echo $numero . ". " . $descripcion . "
-";
+          echo $numero . " . " . $descripcion . " 
+            ". PHP_EOL;
         }
-        echo "---------------------------
-";
+        echo "-------------------------------";
     }
 
     public function obtenerSeleccion() {
@@ -31,8 +32,8 @@ class Menu {
         if (array_key_exists($seleccion, $this->opciones)) {
             $descripcion = $this->opciones[$seleccion];
 
-            echo "Has seleccionado: " . $descripcion . "
-";
+            echo "Ha seleccionado: " . $descripcion . " ". PHP_EOL;
+            echo $seleccion . PHP_EOL;
 
             if ($descripcion === 'Salir') {
                 return false;
@@ -41,7 +42,7 @@ class Menu {
             echo "Opción inválida. Por favor, intente de nuevo.
 ";
         }
-        return true; // Indica que el menú debe continuar
+        return true;
     }
 
     public function iniciar() {

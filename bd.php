@@ -1,7 +1,7 @@
 <?php
 
 class InMemoryDatabase {
-    private static $repuestos = [];
+  private static $repuestos = [];
     private static $nextId = 1;
 
     public function connect() {
