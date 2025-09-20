@@ -37,7 +37,13 @@ class Menu {
         <h3>Propiedades (Atributos)</h3>
         <ul>
             <li><strong><code>private $titulo;</code></strong>: Una cadena de texto que almacena el título principal del menú (ej., "Menú Principal de Inventario"). Es <code>private</code> para que solo los métodos de la propia clase puedan acceder o modificarlo directamente, promoviendo el encapsulamiento.</li>
-            <li><strong><code>private $opciones;</code></strong>: Un array asociativo donde la clave es el número de la opción (ej., <code>1</code>, <code>2</code>, <code>3</code>) y el valor es la descripción de la opción (ej., "Añadir Repuesto", "Listar Repuestos", "Salir"). También es <code>private</code> por las mismas razones.</li>
+            <li><strong><code>private $opciones;</code></strong>: Un array asociativo donde la clave es el número de la opción (ej., <code>1</code>, <code>2</code>, <code>3</code>) y el valor es <strong>otro array asociativo</strong> con dos claves:
+                <ul>
+                    <li><code>'descripcion'</code>: Una cadena de texto que describe la opción (ej., "Añadir Repuesto").</li>
+                    <li><code>'accion'</code>: Un "callable" (una función anónima o un array <code>[$objeto, 'nombreMetodo']</code>) que se ejecutará cuando el usuario seleccione esta opción.</li>
+                </ul>
+                Es <code>private</code> por las mismas razones de encapsulamiento.
+            </li>
         </ul>
 
         <h2>Métodos (Comportamientos)</h2>
@@ -50,7 +56,7 @@ class Menu {
                 <li><strong>Parámetros:</strong>
                     <ul>
                         <li><code>$titulo</code>: La cadena de texto que será el título del menú.</li>
-                        <li><code>array $opciones</code>: Un array asociativo con las opciones del menú.</li>
+                        <li><code>array $opciones</code>: Un array asociativo con las opciones del menú, siguiendo la estructura <code>[numero =&gt; ['descripcion' =&gt; '...', 'accion' =&gt; callable]]</code>.</li>
                     </ul>
                 </li>
                 <li><strong>Funcionamiento:</strong> Asigna los valores de los parámetros a las propiedades internas <code>$this->titulo</code> y <code>$this->opciones</code>.</li>
@@ -65,26 +71,24 @@ class Menu {
             <h3><code>mostrar()</code></h3>
             <p>Este método se encarga de presentar visualmente el menú al usuario en la consola.</p>
             <ul>
-                <li><strong>Propósito:</strong> Imprimir el título del menú y cada una de las opciones numeradas.</li>
+                <li><strong>Propósito:</strong> Imprimir el título del menú y cada una de las opciones numeradas con su descripción.</li>
                 <li><strong>Funcionamiento:</strong>
                     <ol>
                         <li>Imprime el <code>$titulo</code> del menú, enmarcado para una mejor visibilidad.</li>
                         <li>Recorre el array <code>$opciones</code> usando un bucle <code>foreach</code>.</li>
-                        <li>Para cada opción, imprime su número (clave) y su descripción (valor) en una nueva línea.</li>
+                        <li>Para cada opción, imprime su número (clave) y su <code>'descripcion'</code> (valor del sub-array) en una nueva línea.</li>
                         <li>Añade un separador al final para mejorar la legibilidad.</li>
                     </ol>
                 </li>
             </ul>
             <pre><code>public function mostrar() {
-    echo "
---- " . $this->titulo . " ---
+    echo PHP_EOL . "--------------------------------------" . PHP_EOL;
+    echo " --- " . $this->titulo . " ---
 ";
-    foreach ($this->opciones as $numero => $descripcion) {
-        echo $numero . ". " . $descripcion . "
-";
+    foreach ($this->opciones as $numero =&gt; $opcion) {
+        echo $numero . " . " . $opcion['descripcion'] . PHP_EOL;
     }
-    echo "---------------------------
-";
+    echo "--------------------------------------" . PHP_EOL;
 }</code></pre>
         </div>
 
@@ -111,9 +115,9 @@ class Menu {
 
         <div class="method-section">
             <h3><code>ejecutarOpcion($seleccion)</code></h3>
-            <p>Este método procesa la opción elegida por el usuario.</p>
+            <p>Este método procesa la opción elegida por el usuario y ejecuta la acción asociada.</p>
             <ul>
-                <li><strong>Propósito:</strong> Tomar la selección del usuario y ejecutar la acción correspondiente. Por ahora, solo imprime un mensaje.</li>
+                <li><strong>Propósito:</strong> Tomar la selección del usuario, verificar su validez y ejecutar el "callable" (función o método) asociado a esa opción.</li>
                 <li><strong>Parámetros:</strong>
                     <ul>
                         <li><code>$seleccion</code>: La opción (número) ingresada por el usuario.</li>
@@ -124,9 +128,12 @@ class Menu {
                         <li>Verifica si la <code>$seleccion</code> existe como una clave válida en el array <code>$opciones</code> usando <code>array_key_exists()</code>.</li>
                         <li>Si la opción es válida:
                             <ul>
-                                <li>Obtiene la descripción de la opción.</li>
-                                <li>Imprime un mensaje confirmando la selección (ej., "Has seleccionado: Añadir Repuesto").</li>
-                                <li>Si la descripción de la opción es "Salir", devuelve <code>false</code> para indicar que el bucle principal del menú debe terminar.</li>
+                                <li>Obtiene el sub-array de la opción seleccionada, que contiene la <code>'descripcion'</code> y la <code>'accion'</code>.</li>
+                                <li>Imprime un mensaje confirmando la selección.</li>
+                                <li>Verifica si la <code>'accion'</code> es un "callable" (una función o un método ejecutable) usando <code>is_callable()</code>.</li>
+                                <li>Si es un callable, lo ejecuta usando <code>call_user_func($accion)</code>.</li>
+                                <li>Si la acción no es ejecutable, imprime un mensaje de error.</li>
+                                <li>Si la <code>'descripcion'</code> de la opción es "Salir", devuelve <code>false</code> para indicar que el bucle principal del menú debe terminar.</li>
                             </ul>
                         </li>
                         <li>Si la opción no es válida, imprime un mensaje de error.</li>
@@ -136,19 +143,25 @@ class Menu {
             </ul>
             <pre><code>public function ejecutarOpcion($seleccion) {
     if (array_key_exists($seleccion, $this->opciones)) {
-        $descripcion = $this->opciones[$seleccion];
+        $opcionSeleccionada = $this->opciones[$seleccion];
+        $descripcion = $opcionSeleccionada['descripcion'];
+        $accion = $opcionSeleccionada['accion'];
 
-        echo "Has seleccionado: " . $descripcion . "
-";
+        echo "Ha seleccionado: " . $descripcion . PHP_EOL;
+
+        if (is_callable($accion)) {
+            call_user_func($accion);
+        } else {
+            echo "La acción para '" . $descripcion . "' no es ejecutable.\n";
+        }
 
         if ($descripcion === 'Salir') {
-            return false; // Indica que el menú debe detenerse
+            return false;
         }
     } else {
-        echo "Opción inválida. Por favor, intente de nuevo.
-";
+        echo "Opción inválida. Por favor, intente de nuevo.\n";
     }
-    return true; // Indica que el menú debe continuar
+    return true;
 }</code></pre>
         </div>
 
@@ -182,8 +195,7 @@ class Menu {
         $continuarMenu = $this->ejecutarOpcion($seleccion);
     } while ($continuarMenu);
 
-    echo "Saliendo del menú...
-";
+    echo "Saliendo del menú...\n";
 }</code></pre>
         </div>
 
@@ -191,7 +203,7 @@ class Menu {
         <p>Para utilizar esta clase <code>Menu</code>, en tu archivo principal (ahora <code>Main.php</code>), necesitarías:</p>
         <ol>
             <li>Incluir el archivo <code>Menu.php</code>.</li>
-            <li>Definir las opciones de tu menú en un array asociativo.</li>
+            <li>Definir las opciones de tu menú en un array asociativo, donde cada opción es un sub-array con <code>'descripcion'</code> y <code>'accion'</code> (un callable).</li>
             <li>Crear una instancia de la clase <code>Menu</code>, pasándole el título y las opciones.</li>
             <li>Llamar al método <code>iniciar()</code> de tu objeto <code>Menu</code>.</li>
         </ol>
@@ -201,9 +213,9 @@ require_once 'Menu.php';
 
 // Definir las opciones del menú principal
 $opcionesMenuPrincipal = [
-    1 => 'Añadir Repuesto',
-    2 => 'Listar Repuestos',
-    3 => 'Salir'
+    1 =&gt; ['descripcion' =&gt; 'Añadir Repuesto', 'accion' =&gt; function() { echo "Acción de añadir repuesto."; }],
+    2 =&gt; ['descripcion' =&gt; 'Listar Repuestos', 'accion' =&gt; function() { echo "Acción de listar repuestos."; }],
+    3 =&gt; ['descripcion' =&gt; 'Salir', 'accion' =&gt; function() { echo "Saliendo..."; }]
 ];
 
 // Crear una instancia del menú
@@ -212,8 +224,7 @@ $menuPrincipal = new Menu("Menú Principal de Inventario", $opcionesMenuPrincipa
 // Iniciar el menú
 $menuPrincipal->iniciar();
 
-echo "¡Aplicación finalizada!
-";
+echo "¡Aplicación finalizada!\n";
 ?&gt;</code></pre>
     </div>
 </body>

@@ -10,15 +10,12 @@ class Menu {
     }
 
     public function mostrar() {
-      echo PHP_EOL . "--------------------------------------
-        " . PHP_EOL;
-      echo " --- " . $this->titulo . " ---
-       " . PHP_EOL ;
-        foreach ($this->opciones as $numero => $descripcion) {
-          echo $numero . " . " . $descripcion . " 
-            ". PHP_EOL;
+        echo PHP_EOL . "--------------------------------------" . PHP_EOL;
+        echo " --- " . $this->titulo . " ---" . PHP_EOL;
+        foreach ($this->opciones as $numero => $opcion) {
+            echo $numero . " . " . $opcion['descripcion'] . PHP_EOL;
         }
-        echo "-------------------------------";
+        echo "--------------------------------------" . PHP_EOL;
     }
 
     public function obtenerSeleccion() {
@@ -29,21 +26,23 @@ class Menu {
 
     public function ejecutarOpcion($seleccion) {
         if (array_key_exists($seleccion, $this->opciones)) {
-            $descripcion = $this->opciones[$seleccion];
+            $opcionSeleccionada = $this->opciones[$seleccion];
+            $descripcion = $opcionSeleccionada['descripcion'];
+            $accion = $opcionSeleccionada['accion'];
 
-            if ($descripcion !== 'Añadir repuesto'){
+            echo "Ha seleccionado: " . $descripcion . PHP_EOL;
 
-              echo "añadir repuesto";
-            } 
-            echo "Ha seleccionado: " . $descripcion . " ". PHP_EOL;
-            echo $seleccion . PHP_EOL;
+            if (is_callable($accion)) {
+                call_user_func($accion);
+            } else {
+                echo "La acción para '" . $descripcion . "' no es ejecutable.\n";
+            }
 
             if ($descripcion === 'Salir') {
                 return false;
             }
         } else {
-            echo "Opción inválida. Por favor, intente de nuevo.
-";
+            echo "Opción inválida. Por favor, intente de nuevo.\n";
         }
         return true;
     }
