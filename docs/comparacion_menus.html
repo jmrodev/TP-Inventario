@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis Comparativo de Menús</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        h2 { margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <h1>Análisis Comparativo de Implementaciones de Menú (POO PHP)</h1>
+
+    <p>Este documento compara dos implementaciones de sistemas de menú basadas en Programación Orientada a Objetos (POO) en PHP, una encontrada en el proyecto <code>gestionbase</code> y otra en <code>TP-Inventario</code>.</p>
+
+    <h2>Clase <code>Opcion</code></h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Característica</th>
+                <th>Implementación <code>gestionbase</code> (librerias/Opcion.php)</th>
+                <th>Implementación <code>TP-Inventario</code> (Menu.php)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Nombre Propiedad Acción</strong></td>
+                <td><code>$funcion</code></td>
+                <td><code>$accion</code></td>
+            </tr>
+            <tr>
+                <td><strong>Propósito</strong></td>
+                <td>Almacena el nombre visible y la función asociada.</td>
+                <td>Almacena el nombre visible y la acción asociada.</td>
+            </tr>
+            <tr>
+                <td><strong>Encapsulamiento</strong></td>
+                <td>Propiedades <code>private</code>, <code>getters</code> públicos.</td>
+                <td>Propiedades <code>private</code>, <code>getters</code> públicos.</td>
+            </tr>
+            <tr>
+                <td><strong>Constructor</strong></td>
+                <td><code>__construct($nombre, $funcion)</code></td>
+                <td><code>__construct($nombre, $accion)</code></td>
+            </tr>
+        </tbody>
+    </table>
+    <p><strong>Conclusión <code>Opcion</code>:</strong> Ambas clases <code>Opcion</code> son conceptualmente idénticas, sirviendo para encapsular el texto a mostrar y la acción a ejecutar. La diferencia en el nombre de la propiedad (<code>$funcion</code> vs. <code>$accion</code>) es meramente semántica.</p>
+
+    <h2>Clase <code>Menu</code></h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Característica</th>
+                <th>Implementación <code>gestionbase</code> (librerias/Menu.php)</th>
+                <th>Implementación <code>TP-Inventario</code> (Menu.php)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Propiedades</strong></td>
+                <td><code>$titulo</code>, <code>$opciones</code> (array de <code>Opcion</code>)</td>
+                <td><code>$titulo</code>, <code>$opciones</code> (array de <code>Opcion</code>)</td>
+            </tr>
+            <tr>
+                <td><strong>Constructor</strong></td>
+                <td><code>__construct($titulo)</code></td>
+                <td><code>__construct($titulo)</code></td>
+            </tr>
+            <tr>
+                <td><strong>Método <code>addOpcion</code></strong></td>
+                <td><code>addOpcion($opcion)</code></td>
+                <td><code>addOpcion($opcion)</code></td>
+            </tr>
+            <tr>
+                <td><strong>Método <code>mostrar</code></strong></td>
+                <td>Llama a <code>system('clear')</code>, usa una función global <code>mostrar()</code> para imprimir título y opciones.</td>
+                <td>Llama a <code>system('clear')</code>, usa <code>echo</code> directamente para imprimir título y opciones.</td>
+            </tr>
+            <tr>
+                <td><strong>Método <code>elegir</code></strong></td>
+                <td>Llama a <code>mostrar()</code>, lee <code>STDIN</code>, bucle <code>do-while</code> para entrada no vacía. Devuelve el objeto <code>Opcion</code> seleccionado.</td>
+                <td>Llama a <code>mostrar()</code>, lee <code>STDIN</code>, bucle <code>do-while</code> con <strong>validación robusta</strong> (numérico, rango). Devuelve el objeto <code>Opcion</code> seleccionado.</td>
+            </tr>
+            <tr>
+                <td><strong>Métodos Estáticos</strong></td>
+                <td><strong>Sí:</strong> <code>getMenuPrincipal()</code>, <code>getMenuCiudades()</code> para crear menús predefinidos.</td>
+                <td><strong>No:</strong> No incluye métodos estáticos para la creación de menús.</td>
+            </tr>
+            <tr>
+                <td><strong>Manejo de Errores/Validación</strong></td>
+                <td>Validación básica de entrada no vacía en <code>elegir()</code>.</td>
+                <td><strong>Validación explícita y robusta</strong> de la entrada del usuario (numérico y dentro del rango de opciones) en <code>elegir()</code>.</td>
+            </tr>
+            <tr>
+                <td><strong>Dependencias</strong></td>
+                <td><code>require_once ('Opcion.php');</code> y asume una función global <code>mostrar()</code>.</td>
+                <td>La clase <code>Opcion</code> está definida en el mismo archivo, no requiere <code>require_once</code> externo para <code>Opcion</code>. Usa <code>echo</code> directamente.</td>
+            </tr>
+        </tbody>
+    </table>
+    <p><strong>Conclusión <code>Menu</code>:</strong> La clase <code>Menu</code> en <code>TP-Inventario</code> presenta una implementación más autocontenida y robusta en cuanto a la validación de la entrada del usuario. Al incluir la clase <code>Opcion</code> en el mismo archivo, se reduce la necesidad de <code>require_once</code> externos para la funcionalidad básica del menú.</p>
+    <p>Por otro lado, la implementación de <code>gestionbase</code> ofrece una característica útil con sus <strong>métodos estáticos para la creación de menús predefinidos</strong>. Esto puede simplificar la configuración de menús comunes en una aplicación más grande, actuando como "fábricas" de menús.</p>
+
+    <h2>Conceptos de POO Aplicados (Comunes a Ambos)</h2>
+    <ul>
+        <li><strong>Encapsulamiento:</strong> Ambas implementaciones utilizan propiedades <code>private</code> y métodos <code>public</code> (getters y setters) para controlar el acceso a los datos internos de las clases <code>Opcion</code> y <code>Menu</code>.</li>
+        <li><strong>Composición:</strong> La clase <code>Menu</code> en ambos casos "compone" o "tiene" una colección de objetos <code>Opcion</code>, demostrando una relación "has-a".</li>
+        <li><strong>Abstracción:</strong> Ambas clases abstraen la complejidad de la gestión de menús, proporcionando una interfaz sencilla para añadir opciones, mostrarlas y obtener la selección del usuario.</li>
+    </ul>
+
+    <h2>Recomendaciones</h2>
+    <ul>
+        <li>Para proyectos donde se necesiten muchos menús predefinidos o una estructura de menú jerárquica, la aproximación con <strong>métodos estáticos de fábrica</strong> (como en <code>gestionbase</code>) puede ser muy eficiente.</li>
+        <li>Para una implementación de menú más <strong>autocontenida y con validación de entrada robusta</strong> directamente en la clase, la versión de <code>TP-Inventario</code> es excelente.</li>
+        <li>Se podría considerar <strong>combinar las mejores características</strong> de ambas:
+            <ul>
+                <li>Mantener la validación robusta de <code>TP-Inventario</code>.</li>
+                <li>Añadir métodos estáticos de fábrica a la clase <code>Menu</code> (si se considera útil para el proyecto <code>TP-Inventario</code>) para simplificar la creación de menús comunes.</li>
+                <li>Asegurarse de que la función <code>mostrar()</code> (si se usa una global) esté bien definida o usar <code>echo</code> directamente para evitar dependencias ocultas.</li>
+            </ul>
+        </li>
+    </ul>
+</body>
+</html>

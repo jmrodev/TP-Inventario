@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentación: Refactorización del Sistema de Menú e Inventario</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; background-color: #f4f4f4; color: #333; }
+        .container { max-width: 900px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1, h2, h3, h4 { color: #0056b3; }
+        pre { background: #e9e9e9; padding: 15px; border-radius: 5px; overflow-x: auto; margin-bottom: 1em; }
+        code { font-family: "Courier New", Courier, monospace; background: #e9e9e9; padding: 2px 4px; border-radius: 3px; }
+        .code-block { border: 1px solid #ccc; background-color: #f9f9f9; padding: 10px; margin-bottom: 1em; }
+        .code-title { font-weight: bold; margin-bottom: 0.5em; }
+        .diff-added { background-color: #e6ffe6; }
+        .diff-removed { background-color: #ffe6e6; text-decoration: line-through; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Documentación: Refactorización del Sistema de Menú e Inventario (TP-Inventario)</h1>
+
+        <p>Esta refactorización se llevó a cabo con el objetivo principal de mejorar la modularidad, la adherencia a los principios de la Programación Orientada a Objetos (POO) y simplificar la lógica en el archivo principal <code>Main.php</code>. Los cambios se centraron en separar las responsabilidades de la lógica de negocio del inventario de la presentación del menú.</p>
+
+        <h2>Cambios Realizados</h2>
+
+        <h3>1. Nueva Clase: <code>InventoryManager.php</code></h3>
+        <ul>
+            <li><strong>Propósito:</strong> Encapsular toda la lógica de negocio relacionada con la gestión de repuestos. Esto incluye las operaciones CRUD (Crear, Leer, Actualizar, Eliminar) sobre los objetos <code>Repuesto</code>.</li>
+            <li><strong>Responsabilidades:</strong>
+                <ul>
+                    <li>Manejar la interacción con el usuario para la entrada de datos de repuestos.</li>
+                    <li>Utilizar <code>RepuestoFactory</code> para crear instancias de <code>Repuesto</code> según el tipo.</li>
+                    <li>Interactuar con <code>InMemoryDatabase</code> para almacenar, recuperar, actualizar y eliminar repuestos.</li>
+                </ul>
+            </li>
+            <li><strong>Dependencias:</strong> Recibe instancias de <code>InMemoryDatabase</code> y <code>RepuestoFactory</code> a través de su constructor (Inyección de Dependencias).</li>
+            <li><strong>Métodos Implementados:</strong>
+                <ul>
+                    <li><code>addSparePart()</code>: Permite al usuario añadir un nuevo repuesto al inventario.</li>
+                    <li><code>listSpareParts()</code>: Muestra un listado detallado de todos los repuestos en el inventario.</li>
+                    <li><code>editSparePart()</code>: Permite al usuario editar un repuesto existente por su ID.</li>
+                    <li><code>deleteSparePart()</code>: Permite al usuario eliminar un repuesto por su ID.</li>
+                    <li><code>exitApplication()</code>: Un método simple para indicar la salida de la aplicación.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>2. Modificación de la Clase <code>Menu</code> (<code>Menu.php</code>)</h3>
+        <ul>
+            <li><strong>Adición de un Método Estático de Fábrica:</strong> Se añadió el método <code>public static function createMainMenu(InventoryManager $manager): self</code>.</li>
+            <li><strong>Propósito:</strong> Centralizar la definición de las opciones del menú principal y sus acciones asociadas. En lugar de definir las acciones como funciones anónimas en <code>Main.php</code>, ahora se referencian los métodos de la instancia de <code>InventoryManager</code>.</li>
+            <li><strong>Beneficio:</strong> <code>Main.php</code> se vuelve más limpio y declarativo, ya que la configuración del menú se abstrae dentro de la propia clase <code>Menu</code>.</li>
+        </ul>
+
+        <h3>3. Modificación de <code>Main.php</code></h3>
+        <ul>
+            <li><strong>Antes:</strong> Contenía la lógica detallada de las acciones del menú dentro de funciones anónimas, lo que lo hacía denso y menos mantenible. También era responsable de la creación explícita del objeto <code>Menu</code> con todas sus opciones.</li>
+            <li><strong>Después:</strong> Su rol se ha simplificado a la orquestación de la aplicación. Ahora se encarga de:
+                <ul>
+                    <li>Inicializar las dependencias clave (<code>InMemoryDatabase</code>, <code>RepuestoFactory</code>).</li>
+                    <li>Crear una instancia de <code>InventoryManager</code>.</li>
+                    <li>Utilizar el método estático de fábrica <code>Menu::createMainMenu()</code> para obtener una instancia del menú principal, pasándole el <code>InventoryManager</code>.</li>
+                    <li>Iniciar el ciclo del menú.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>4. Correcciones en <code>bd.php</code></h3>
+        <ul>
+            <li><strong>Arreglo del Patrón Singleton:</strong> Se corrigió el método <code>InMemoryDatabase::getInstance()</code> para asegurar que la instancia de la base de datos se cree correctamente la primera vez que se solicita, evitando un <code>TypeError</code>.</li>
+            <li><strong>Corrección de Visibilidad de <code>__wakeup()</code>:</strong> Se cambió la visibilidad del método mágico <code>__wakeup()</code> de <code>private</code> a <code>public</code>, según lo requiere PHP.</li>
+        </ul>
+
+        <h2>Comparación de Código (Antes y Después)</h2>
+
+        <h3><code>Main.php</code></h3>
+        <h4>Antes:</h4>
+        <pre><code>&lt;?php
+
+require_once 'bd.php';
+require_once 'Repuesto.php';
+require_once 'RepuestoMoto.php';
+require_once 'RepuestoCamion.php';
+require_once 'RepuestoCamioneta.php';
+require_once 'Menu.php';
+require_once 'RepuestoFactory.php';
+
+
+$db = InMemoryDatabase::getInstance();
+
+$opcionesMenuPrincipal = [
+    1 =&gt; ['descripcion' =&gt; 'Añadir Repuesto', 'accion' =&gt; function() use ($db) {
+        echo "--- Añadir Nuevo Repuesto ---\n";
+        echo "Seleccione el tipo de repuesto:\n";
+        echo "1. Moto\n";
+        echo "2. Camion\n";
+        echo "3. Camioneta\n";
+        echo "Ingrese su opción: ";
+        $tipoOpcion = trim(fgets(STDIN));
+
+        $tipoRepuesto = '';
+        switch ($tipoOpcion) {
+            case '1': $tipoRepuesto = 'Moto'; break;
+            case '2': $tipoRepuesto = 'Camion'; break;
+            case '3': $tipoRepuesto = 'Camioneta'; break;
+            default:
+                echo "Opción de tipo de repuesto inválida.\n";
+                return;
+        }
+
+        echo "Nombre: ";
+        $nombre = trim(fgets(STDIN));
+        echo "Descripción: ";
+        $descripcion = trim(fgets(STDIN));
+        echo "Precio: ";
+        $precio = (float)trim(fgets(STDIN));
+        echo "Cantidad: ";
+        $cantidad = (int)trim(fgets(STDIN));
+        echo "Marca: ";
+        $marca = trim(fgets(STDIN));
+        echo "Modelo: ";
+        $modelo = trim(fgets(STDIN));
+
+        $datosRepuesto = [
+            'nombre' =&gt; $nombre,
+            'descripcion' =&gt; $descripcion,
+            'precio' =&gt; $precio,
+            'cantidad' =&gt; $cantidad,
+            'marca' =&gt; $marca,
+            'modelo' =&gt; $modelo,
+        ];
+
+        if ($tipoRepuesto === 'Camioneta') {
+            echo "Tracción (ej: 4x2, 4x4): ";
+            $datosRepuesto['traccion'] = trim(fgets(STDIN));
+        }
+
+        $repuesto = RepuestoFactory::crearRepuesto($tipoRepuesto, $datosRepuesto);
+
+        if ($repuesto) {
+            $db-&gt;addRepuesto($repuesto);
+            echo "Repuesto de " . $tipoRepuesto . " añadido con éxito (ID: " . $repuesto-&gt;getId() . ").\n";
+        } else {
+            echo "No se pudo crear el repuesto.\n";
+        }
+    }],
+    2 =&gt; ['descripcion' =&gt; 'Listar Repuestos (funcionalidad no disponible)', 'accion' =&gt; function() { echo "Funcionalidad de listar repuestos no implementada.\n"; }],
+    3 =&gt; ['descripcion' =&gt; 'Editar Repuesto (funcionalidad no disponible)', 'accion' =&gt; function() { echo "Funcionalidad de editar repuesto no implementada.\n"; }],
+    4 =&gt; ['descripcion' =&gt; 'Eliminar Repuesto (funcionalidad no disponible)', 'accion' =&gt; function() { echo "Funcionalidad de eliminar repuesto no implementada.\n"; }],
+    5 =&gt; ['descripcion' =&gt; 'Salir', 'accion' =&gt; function() { echo "Saliendo de la aplicación...\n"; }]
+];
+
+$menuPrincipal = new Menu("Menú Principal de Inventario", $opcionesMenuPrincipal);
+
+$menuPrincipal-&gt;iniciar();
+
+echo "¡Aplicación finalizada!\n";
+
+?&gt;</code></pre>
+
+        <h4>Después:</h4>
+        <pre><code>&lt;?php
+
+require_once 'bd.php';
+require_once 'Repuesto.php';
+require_once 'RepuestoMoto.php';
+require_once 'RepuestoCamion.php';
+require_once 'RepuestoCamioneta.php';
+require_once 'RepuestoFactory.php';
+require_once 'Menu.php';
+require_once 'InventoryManager.php';
+
+// Inicialización de dependencias
+$db = InMemoryDatabase::getInstance();
+$repuestoFactory = new RepuestoFactory();
+
+// Instanciar el manejador de inventario
+$inventoryManager = new InventoryManager($db, $repuestoFactory);
+
+// Crear el menú principal usando el método estático de fábrica
+$menuPrincipal = Menu::createMainMenu($inventoryManager);
+
+// Iniciar el menú
+$menuPrincipal-&gt;iniciar();
+
+echo "¡Aplicación finalizada!\n";
+
+?&gt;</code></pre>
+
+        <h3><code>Menu.php</code></h3>
+        <h4>Antes (fragmento relevante del final de la clase):</h4>
+        <pre><code>    public function iniciar() {
+        $continuarMenu = true;
+
+        do {
+            $this-&gt;mostrar();
+            $seleccion = $this-&gt;obtenerSeleccion();
+            $continuarMenu = $this-&gt;ejecutarOpcion($seleccion);
+        } while ($continuarMenu);
+
+        echo "Saliendo del menú...\n";
+    }
+}
+
+?&gt;</code></pre>
+
+        <h4>Después (fragmento relevante del final de la clase):</h4>
+        <pre><code>    public function iniciar() {
+        $continuarMenu = true;
+
+        do {
+            $this-&gt;mostrar();
+            $seleccion = $this-&gt;obtenerSeleccion();
+            $continuarMenu = $this-&gt;ejecutarOpcion($seleccion);
+        } while ($continuarMenu);
+
+        echo "Saliendo del menú...\n";
+    }
+
+    /**
+     * Método estático de fábrica para crear el menú principal de inventario.
+     *
+     * @param InventoryManager $manager La instancia de InventoryManager para ejecutar las acciones.
+     * @return Menu Una nueva instancia del menú principal.
+     */
+    public static function createMainMenu(InventoryManager $manager): self {
+        $opciones = [
+            1 =&gt; ['descripcion' =&gt; 'Añadir Repuesto', 'accion' =&gt; [$manager, 'addSparePart']],
+            2 =&gt; ['descripcion' =&gt; 'Listar Repuestos', 'accion' =&gt; [$manager, 'listSpareParts']],
+            3 =&gt; ['descripcion' =&gt; 'Editar Repuesto', 'accion' =&gt; [$manager, 'editSparePart']],
+            4 =&gt; ['descripcion' =&gt; 'Eliminar Repuesto', 'accion' =&gt; [$manager, 'deleteSparePart']],
+            5 =&gt; ['descripcion' =&gt; 'Salir', 'accion' =&gt; [$manager, 'exitApplication']]
+        ];
+        return new self("Menú Principal de Inventario", $opciones);
+    }
+}
+
+?&gt;</code></pre>
+
+        <h3><code>InventoryManager.php</code></h3>
+        <h4>Después (Archivo completo, ya que es nuevo):</h4>
+        <pre><code>&lt;?php
+
+require_once 'bd.php';
+require_once 'RepuestoFactory.php';
+require_once 'Repuesto.php'; // Asegurarse de que Repuesto.php esté incluido para el tipo Repuesto
+require_once 'RepuestoCamioneta.php'; // Necesario para instanceof en listSpareParts y editSparePart
+
+class InventoryManager {
+    private $db;
+    private $repuestoFactory;
+
+    public function __construct(InMemoryDatabase $db, RepuestoFactory $repuestoFactory) {
+        $this-&gt;db = $db;
+        $this-&gt;repuestoFactory = $repuestoFactory;
+    }
+
+    public function addSparePart() {
+        echo "--- Añadir Nuevo Repuesto ---\n";
+        echo "Seleccione el tipo de repuesto:\n";
+        echo "1. Moto\n";
+        echo "2. Camion\n";
+        echo "3. Camioneta\n";
+        echo "Ingrese su opción: ";
+        $tipoOpcion = trim(fgets(STDIN));
+
+        $tipoRepuesto = '';
+        switch ($tipoOpcion) {
+            case '1': $tipoRepuesto = 'Moto'; break;
+            case '2': $tipoRepuesto = 'Camion'; break;
+            case '3': $tipoRepuesto = 'Camioneta'; break;
+            default:
+                echo "Opción de tipo de repuesto inválida.\n";
+                return;
+        }
+
+        echo "Nombre: ";
+        $nombre = trim(fgets(STDIN));
+        echo "Descripción: ";
+        $descripcion = trim(fgets(STDIN));
+        echo "Precio: ";
+        $precio = (float)trim(fgets(STDIN));
+        echo "Cantidad: ";
+        $cantidad = (int)trim(fgets(STDIN));
+        echo "Marca: ";
+        $marca = trim(fgets(STDIN));
+        echo "Modelo: ";
+        $modelo = trim(fgets(STDIN));
+
+        $datosRepuesto = [
+            'nombre' =&gt; $nombre,
+            'descripcion' =&gt; $descripcion,
+            'precio' =&gt; $precio,
+            'cantidad' =&gt; $cantidad,
+            'marca' =&gt; $marca,
+            'modelo' =&gt; $modelo,
+        ];
+
+        if ($tipoRepuesto === 'Camioneta') {
+            echo "Tracción (ej: 4x2, 4x4): ";
+            $datosRepuesto['traccion'] = trim(fgets(STDIN));
+        }
+
+        $repuesto = $this-&gt;repuestoFactory-&gt;crearRepuesto($tipoRepuesto, $datosRepuesto);
+
+        if ($repuesto) {
+            $this-&gt;db-&gt;addRepuesto($repuesto);
+            echo "Repuesto de " . $tipoRepuesto . " añadido con éxito (ID: " . $repuesto-&gt;getId() . ").\n";
+        } else {
+            echo "No se pudo crear el repuesto.\n";
+        }
+    }
+
+    public function listSpareParts() {
+        echo "--- Listado de Repuestos ---\n";
+        $repuestos = $this-&gt;db-&gt;getAllRepuestos();
+        if (empty($repuestos)) {
+            echo "No hay repuestos en el inventario.\n";
+            return;
+        }
+
+        foreach ($repuestos as $repuesto) {
+            echo "--------------------------------------\n";
+            echo "ID: " . $repuesto-&gt;getId() . "\n";
+            echo "Nombre: " . $repuesto-&gt;getNombre() . "\n";
+            echo "Descripción: " . $repuesto-&gt;getDescripcion() . "\n";
+            echo "Precio: " . $repuesto-&gt;getPrecio() . "\n";
+            echo "Cantidad: " . $repuesto-&gt;getCantidad() . "\n";
+            echo "Categoría: " . $repuesto-&gt;getCategoria() . "\n";
+            echo "Marca: " . $repuesto-&gt;getMarca() . "\n";
+            echo "Modelo: " . $repuesto-&gt;getModelo() . "\n";
+            if ($repuesto instanceof RepuestoCamioneta) {
+                echo "Tracción: " . $repuesto-&gt;getTraccion() . "\n";
+            }
+        }
+        echo "--------------------------------------\n";
+    }
+
+    public function editSparePart() {
+        echo "--- Editar Repuesto ---\n";
+        echo "Ingrese el ID del repuesto a editar: ";
+        $id = (int)trim(fgets(STDIN));
+
+        $repuesto = $this-&gt;db-&gt;getRepuestoById($id);
+
+        if (!$repuesto) {
+            echo "Repuesto con ID " . $id . " no encontrado.\n";
+            return;
+        }
+
+        echo "Repuesto actual: " . $repuesto-&gt;getNombre() . " (ID: " . $repuesto-&gt;getId() . ")\n";
+        echo "Ingrese nuevos valores (deje en blanco para mantener el actual):\n";
+
+        echo "Nombre (actual: " . $repuesto-&gt;getNombre() . "): ";
+        $nombre = trim(fgets(STDIN));
+        if (!empty($nombre)) { $repuesto-&gt;setNombre($nombre); }
+
+        echo "Descripción (actual: " . $repuesto-&gt;getDescripcion() . "): ";
+        $descripcion = trim(fgets(STDIN));
+        if (!empty($descripcion)) { $repuesto-&gt;setDescripcion($descripcion); }
+
+        echo "Precio (actual: " . $repuesto-&gt;getPrecio() . "): ";
+        $precio = trim(fgets(STDIN));
+        if (!empty($precio)) { $repuesto-&gt;setPrecio((float)$precio); }
+
+        echo "Cantidad (actual: " . $repuesto-&gt;getCantidad() . "): ";
+        $cantidad = trim(fgets(STDIN));
+        if (!empty($cantidad)) { $repuesto-&gt;setCantidad((int)$cantidad); }
+
+        echo "Marca (actual: " . $repuesto-&gt;getMarca() . "): ";
+        $marca = trim(fgets(STDIN));
+        if (!empty($marca)) { $repuesto-&gt;setMarca($marca); }
+
+        echo "Modelo (actual: " . $repuesto-&gt;getModelo() . "): ";
+        $modelo = trim(fgets(STDIN));
+        if (!empty($modelo)) { $repuesto-&gt;setModelo($modelo); }
+
+        if ($repuesto instanceof RepuestoCamioneta) {
+            echo "Tracción (actual: " . $repuesto-&gt;getTraccion() . "): ";
+            $traccion = trim(fgets(STDIN));
+            if (!empty($traccion)) { $repuesto-&gt;setTraccion($traccion); }
+        }
+
+        echo "Repuesto con ID " . $id . " actualizado con éxito.\n";
+    }
+
+    public function deleteSparePart() {
+        echo "--- Eliminar Repuesto ---\n";
+        echo "Ingrese el ID del repuesto a eliminar: ";
+        $id = (int)trim(fgets(STDIN));
+
+        if ($this-&gt;db-&gt;removeRepuesto($id)) {
+            echo "Repuesto con ID " . $id . " eliminado con éxito.\n";
+        } else {
+            echo "Repuesto con ID " . $id . " no encontrado.\n";
+        }
+    }
+
+    public function exitApplication() {
+        echo "Saliendo de la aplicación...\n";
+    }
+}
+
+?&gt;</code></pre>
+
+        <h3><code>bd.php</code></h3>
+        <h4>Antes (fragmento relevante):</h4>
+        <pre><code>    public static function getInstance(): InMemoryDatabase {
+        if (self::$instance === null) {
+            
+        }
+        return self::$instance;
+    }
+
+    // ...
+
+    private function __wakeup() {}
+}</code></pre>
+
+        <h4>Después (fragmento relevante):</h4>
+        <pre><code>    public static function getInstance(): InMemoryDatabase {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    // ...
+
+    public function __wakeup() {}
+}</code></pre>
+    </div>
+</body>
+</html>
