@@ -59,9 +59,10 @@ Para una comprensión más profunda del diseño, la arquitectura y el funcionami
 *   **Patrón Singleton Manual:** [docs/aboutProject/Singleton_Pattern_Manual.html](docs/aboutProject/Singleton_Pattern_Manual.html)
 *   **Reestructuración de Carpetas:** [docs/aboutProject/folder_restructuring.html](docs/aboutProject/folder_restructuring.html)
 *   **DFD Overview:** [docs/aboutProject/dfd_overview.html](docs/aboutProject/dfd_overview.html)
+*   **Explicación de BASE_PATH:** [docs/aboutProject/base_path_explanation.html](docs/aboutProject/base_path_explanation.html)
 
 ## Créditos
 
-Desarrollado por [Tu Nombre/Usuario]
+Desarrollado por [www.github.com/jmrodev]
 
 ---
