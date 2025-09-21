@@ -46,6 +46,11 @@ class InventoryManager {
         return $this->db->getAllRepuestos();
     }
 
+    public function getSparePartById(int $id): ?Repuesto
+    {
+        return $this->db->getRepuestoById($id);
+    }
+
     public function updateSparePart(int $id, array $updatedData): bool
     {
         $repuesto = $this->db->getRepuestoById($id);

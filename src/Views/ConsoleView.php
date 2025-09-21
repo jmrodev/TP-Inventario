@@ -46,4 +46,21 @@ class ConsoleView
             $this->displayMessage("--------------------------");
         }
     }
+
+    public function displayMenuAndGetChoice(string $prompt, array $options): string
+    {
+        while (true) {
+            $this->displayMessage($prompt);
+            foreach ($options as $key => $value) {
+                $this->displayMessage(($key + 1) . ". " . $value);
+            }
+            $choice = (int) $this->displayInputPrompt("Ingrese su opción: ");
+
+            if ($choice > 0 && $choice <= count($options)) {
+                return $options[$choice - 1];
+            } else {
+                $this->displayError("Opción no válida. Intente de nuevo.");
+            }
+        }
+    }
 }

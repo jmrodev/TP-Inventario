@@ -52,7 +52,8 @@ class InventoryController
     private function addSparePart(): void
     {
         $this->view->displayMessage("--- Añadir Nuevo Repuesto ---");
-        $tipo = $this->view->displayInputPrompt("Tipo de repuesto (Moto, Camion, Camioneta): ");
+        $availableTypes = ['Moto', 'Camion', 'Camioneta'];
+        $tipo = $this->view->displayMenuAndGetChoice("Tipo de repuesto:", $availableTypes);
         $nombre = $this->view->displayInputPrompt("Nombre: ");
         $descripcion = $this->view->displayInputPrompt("Descripción: ");
         $precio = (float) $this->view->displayInputPrompt("Precio: ");

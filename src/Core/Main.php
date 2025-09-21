@@ -12,6 +12,8 @@ require_once BASE_PATH . 'src/Core/MenuRendererInterface.php';
 require_once BASE_PATH . 'src/Core/ConsoleMenuRenderer.php';
 require_once BASE_PATH . 'src/Core/Menu.php';
 require_once BASE_PATH . 'src/Core/InventoryManager.php';
+require_once BASE_PATH . 'src/Views/ConsoleView.php';
+require_once BASE_PATH . 'src/Controllers/InventoryController.php';
 
 use App\Core\Menu;
 use App\Core\InventoryManager;

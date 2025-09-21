@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explicación del Patrón MVC en TP-Inventario</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; background-color: #f4f4f4; color: #333; }
+        .container { max-width: 900px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1, h2, h3 { color: #0056b3; }
+        pre { background: #e9e9e9; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        code { font-family: "Courier New", Courier, monospace; background: #e9e9e9; padding: 2px 4px; border-radius: 3px; }
+        .note { background-color: #e0f7fa; border-left: 5px solid #00bcd4; padding: 10px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Explicación del Patrón Modelo-Vista-Controlador (MVC) en TP-Inventario</h1>
+
+        <p>El patrón de diseño Modelo-Vista-Controlador (MVC) es una arquitectura de software que separa la lógica de una aplicación en tres componentes principales interconectados. Esto ayuda a organizar el código, mejorar la mantenibilidad y facilitar el desarrollo colaborativo.</p>
+
+        <h2>Componentes del MVC</h2>
+
+        <h3>1. Modelo (Model)</h3>
+        <p>El Modelo representa la lógica de negocio de la aplicación, los datos y las reglas para manipular esos datos. Es independiente de la interfaz de usuario y de cómo se presentan los datos.</p>
+        <p>En el proyecto TP-Inventario, los componentes del Modelo incluyen:</p>
+        <ul>
+            <li><strong>Clases de Repuestos (<code>Repuesto.php</code>, <code>RepuestoMoto.php</code>, <code>RepuestoCamion.php</code>, <code>RepuestoCamioneta.php</code>):</strong> Estas clases definen la estructura y el comportamiento de los diferentes tipos de repuestos. Contienen las propiedades (nombre, precio, cantidad, etc.) y los métodos para acceder y modificar esos datos (getters y setters).</li>
+            <li><strong><code>InMemoryDatabase.php</code>:</strong> Simula una base de datos para almacenar y gestionar los objetos <code>Repuesto</code>. Contiene la lógica para añadir, obtener, actualizar y eliminar repuestos.</li>
+            <li><strong><code>InventoryManager.php</code>:</strong> Actúa como una capa de servicio que interactúa con la base de datos y las clases de repuestos. Contiene la lógica de negocio principal para la gestión del inventario, como añadir un repuesto, listar todos los repuestos, etc. También utiliza el <code>RepuestoFactory</code> para la creación de objetos.</li>
+            <li><strong><code>RepuestoFactory.php</code>:</strong> Es una fábrica que se encarga de crear instancias de los diferentes tipos de repuestos (Moto, Camion, Camioneta) basándose en el tipo proporcionado. Esto centraliza la lógica de creación de objetos y permite añadir nuevos tipos de repuestos de forma más organizada.</li>
+        </ul>
+
+        <h3>2. Vista (View)</h3>
+        <p>La Vista es responsable de la presentación de los datos al usuario. No contiene lógica de negocio, solo se encarga de mostrar lo que el Modelo le proporciona.</p>
+        <p>En TP-Inventario, la Vista es:</p>
+        <ul>
+            <li><strong><code>ConsoleView.php</code>:</strong> Esta clase se encarga de toda la interacción con el usuario a través de la consola. Muestra mensajes, errores, listas de repuestos y solicita entradas al usuario. Su única responsabilidad es la interfaz de usuario en la consola.</li>
+        </ul>
+        <pre><code>
+// Ejemplo de cómo la Vista muestra un mensaje
+$this->view->displayMessage("Repuesto añadido con éxito.");
+
+// Ejemplo de cómo la Vista solicita una entrada
+$nombre = $this->view->displayInputPrompt("Nombre: ");
+        </code></pre>
+
+        <h3>3. Controlador (Controller)</h3>
+        <p>El Controlador actúa como un intermediario entre el Modelo y la Vista. Recibe las entradas del usuario (a través de la Vista), las procesa, interactúa con el Modelo para realizar las operaciones necesarias y luego actualiza la Vista con los resultados.</p>
+        <p>En TP-Inventario, el Controlador es:</p>
+        <ul>
+            <li><strong><code>InventoryController.php</code>:</strong> Este es el cerebro de la aplicación.
+                <ul>
+                    <li>Recibe las acciones del usuario (por ejemplo, "Añadir Repuesto") a través del menú.</li>
+                    <li>Llama a los métodos apropiados del <code>InventoryManager</code> (Modelo) para realizar la lógica de negocio (ej. <code>addSparePart</code>).</li>
+                    <li>Utiliza la <code>ConsoleView</code> (Vista) para mostrar información al usuario (mensajes de éxito, errores) y para solicitar más datos.</li>
+                    <li>Gestiona el flujo de la aplicación, decidiendo qué hacer en función de la entrada del usuario.</li>
+                </ul>
+            </li>
+        </ul>
+        <pre><code>
+// Ejemplo de cómo el Controlador interactúa con la Vista y el Modelo
+private function addSparePart(): void
+{
+    $this->view->displayMessage("--- Añadir Nuevo Repuesto ---");
+    $tipo = $this->view->displayInputPrompt("Tipo de repuesto (Moto, Camion, Camioneta): ");
+    // ... más entradas ...
+
+    try {
+        $this->inventoryManager->addSparePart($tipo, $nombre, $descripcion, $precio, $cantidad, $marca, $modelo, $additionalData);
+        $this->view->displayMessage("Repuesto añadido con éxito.");
+    } catch (\Exception $e) {
+        $this->view->displayError($e->getMessage());
+    }
+}
+        </code></pre>
+
+        <h2>Interacción entre Componentes</h2>
+        <p>La interacción sigue un flujo claro:</p>
+        <ol>
+            <li>El usuario interactúa con la <strong>Vista</strong> (por ejemplo, selecciona una opción del menú).</li>
+            <li>La <strong>Vista</strong> notifica al <strong>Controlador</strong> sobre la acción del usuario.</li>
+            <li>El <strong>Controlador</strong> procesa la entrada, puede solicitar más información a la <strong>Vista</strong>, y luego invoca la lógica de negocio apropiada en el <strong>Modelo</strong>.</li>
+            <li>El <strong>Modelo</strong> realiza la operación (ej. guarda un repuesto en la base de datos) y notifica al <strong>Controlador</strong> sobre el resultado.</li>
+            <li>El <strong>Controlador</strong> recibe el resultado del <strong>Modelo</strong> y decide cómo actualizar la <strong>Vista</strong> (ej. mostrar un mensaje de éxito o un error).</li>
+            <li>La <strong>Vista</strong> se actualiza para reflejar el nuevo estado de la aplicación.</li>
+        </ol>
+
+        <div class="note">
+            <strong>Nota:</strong> En esta implementación de consola, la "notificación" del Modelo al Controlador y del Controlador a la Vista a menudo se realiza mediante llamadas directas a métodos, ya que no hay un sistema de eventos complejo como en aplicaciones GUI o web.
+        </div>
+
+        <h2>Beneficios del MVC en TP-Inventario</h2>
+        <ul>
+            <li><strong>Separación de Responsabilidades:</strong> Cada componente tiene una única responsabilidad clara, lo que facilita entender, mantener y depurar el código.</li>
+            <li><strong>Reusabilidad:</strong> Los componentes del Modelo (lógica de negocio y datos) pueden ser reutilizados en diferentes interfaces de usuario (por ejemplo, una interfaz web o una API).</li>
+            <li><strong>Flexibilidad:</strong> Permite cambiar la interfaz de usuario (Vista) sin afectar la lógica de negocio (Modelo) y viceversa.</li>
+            <li><strong>Organización:</strong> El código está mejor estructurado y es más fácil de navegar para nuevos desarrolladores.</li>
+        </ul>
+    </div>
+</body>
+</html>
