@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refactorización a MVC en TP-Inventario: Detalles</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; background-color: #f4f4f4; color: #333; }
+        .container { max-width: 900px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1, h2, h3 { color: #0056b3; }
+        pre { background: #e9e9e9; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        code { font-family: "Courier New", Courier, monospace; background: #e9e9e9; padding: 2px 4px; border-radius: 3px; }
+        .section-divider { border-top: 1px solid #eee; margin: 30px 0; }
+        .note { background-color: #e0f7fa; border-left: 5px solid #00bcd4; padding: 10px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Refactorización a MVC en TP-Inventario: Detalles de la Transformación</h1>
+
+        <p>Este documento detalla cómo las funcionalidades del proyecto TP-Inventario fueron refactorizadas para adherirse al patrón Modelo-Vista-Controlador (MVC), separando claramente las responsabilidades y mejorando la estructura del código.</p>
+
+        <div class="section-divider"></div>
+
+        <h2>1. Separación de la Lógica de Presentación (Vista)</h2>
+        <h3>Antes: Lógica de E/S mezclada</h3>
+        <p>Originalmente, la lógica para mostrar mensajes, menús y solicitar entradas al usuario probablemente estaba dispersa en varias partes del código, mezclada con la lógica de negocio o de control.</p>
+        <pre><code>
+// Posible código antes de la refactorización (ejemplo conceptual)
+// En un solo archivo o función:
+echo "--- Menú Principal ---" . PHP_EOL;
+echo "1. Añadir Repuesto" . PHP_EOL;
+$opcion = trim(fgets(STDIN));
+
+if ($opcion == 1) {
+    echo "Tipo de repuesto: ";
+    $tipo = trim(fgets(STDIN));
+    // ... lógica de negocio para añadir repuesto ...
+}
+        </code></pre>
+
+        <h3>Después: <code>ConsoleView.php</code> como Vista dedicada</h3>
+        <p>Se creó la clase <code>ConsoleView</code> para encapsular toda la interacción con la consola. Ahora, cualquier operación de entrada o salida se delega a esta clase, asegurando que la lógica de presentación esté centralizada y sea reutilizable.</p>
+        <pre><code>
+// src/Views/ConsoleView.php
+namespace App\Views;
+
+class ConsoleView
+{
+    public function displayMessage(string $message): void { /* ... */ }
+    public function displayError(string $error): void { /* ... */ }
+    public function displayInputPrompt(string $prompt): string { /* ... */ }
+    public function displayMenuAndGetChoice(string $prompt, array $options): string { /* ... */ }
+    // ... otras funciones de presentación ...
+}
+        </code></pre>
+        <p><strong>Impacto MVC:</strong> <code>ConsoleView</code> ahora es la <strong>Vista</strong>. Su única responsabilidad es mostrar información y obtener entradas del usuario, sin saber nada sobre la lógica de negocio.</p>
+
+        <div class="section-divider"></div>
+
+        <h2>2. Encapsulación de la Lógica de Negocio (Modelo)</h2>
+        <h3>Antes: Lógica de negocio dispersa</h3>
+        <p>La creación de objetos, la gestión de la base de datos (in-memory) y las reglas de negocio para el inventario podrían haber estado mezcladas con la interfaz de usuario o la lógica de control.</p>
+
+        <h3>Después: <code>Repuesto</code>, <code>InMemoryDatabase</code>, <code>RepuestoFactory</code> y <code>InventoryManager</code> como Modelo</h3>
+        <p>La lógica de negocio se dividió en varias clases, cada una con una responsabilidad específica dentro del Modelo:</p>
+        <ul>
+            <li><strong>Clases <code>Repuesto</code> (<code>Repuesto.php</code>, <code>RepuestoMoto.php</code>, etc.):</strong> Definen la estructura de los datos y su comportamiento básico.</li>
+            <li><strong><code>InMemoryDatabase.php</code>:</strong> Se encarga de la persistencia de los datos (simulada).</li>
+            <li><strong><code>RepuestoFactory.php</code>:</strong> Centraliza la creación de instancias de <code>Repuesto</code>, desacoplando la lógica de creación del resto de la aplicación.</li>
+            <li><strong><code>InventoryManager.php</code>:</strong> Es el corazón del Modelo. Contiene las reglas de negocio para añadir, listar, editar y eliminar repuestos. Interactúa con <code>InMemoryDatabase</code> y <code>RepuestoFactory</code>, pero no directamente con la Vista o el Controlador.</li>
+        </ul>
+        <pre><code>
+// src/Core/InventoryManager.php (ejemplo de método)
+namespace App\Core;
+
+use App\Database\InMemoryDatabase;
+use App\Factories\RepuestoFactory;
+use App\Models\Repuesto;
+
+class InventoryManager
+{
+    private $db;
+    private $repuestoFactory;
+
+    public function __construct(InMemoryDatabase $db, RepuestoFactory $repuestoFactory) { /* ... */ }
+
+    public function addSparePart(string $tipoRepuesto, /* ... */): Repuesto
+    {
+        // ... lógica para crear y añadir un repuesto ...
+        $repuesto = $this->repuestoFactory->crearRepuesto($tipoRepuesto, $datosRepuesto);
+        $this->db->addRepuesto($repuesto);
+        return $repuesto;
+    }
+
+    public function getSparePartById(int $id): ?Repuesto
+    {
+        return $this->db->getRepuestoById($id);
+    }
+    // ... otros métodos de negocio ...
+}
+        </code></pre>
+        <p><strong>Impacto MVC:</strong> Estas clases forman el <strong>Modelo</strong>. Contienen los datos y la lógica de negocio, siendo completamente independientes de cómo se presentan o cómo se interactúa con el usuario.</p>
+
+        <div class="section-divider"></div>
+
+        <h2>3. Orquestación de la Lógica (Controlador)</h2>
+        <h3>Antes: Lógica de control y flujo mezclada</h3>
+        <p>El flujo de la aplicación y la respuesta a las acciones del usuario probablemente estaban entrelazados con la lógica de negocio y la presentación.</p>
+
+        <h3>Después: <code>InventoryController.php</code> como Controlador dedicado</h3>
+        <p>La clase <code>InventoryController</code> se encarga de recibir las acciones del usuario (a través de la Vista), decidir qué lógica de negocio ejecutar (en el Modelo) y cómo actualizar la Vista. Actúa como el intermediario principal.</p>
+        <pre><code>
+// src/Controllers/InventoryController.php (ejemplo de método)
+namespace App\Controllers;
+
+use App\Views\ConsoleView;
+use App\Core\InventoryManager;
+use App\Core\Menu;
+
+class InventoryController
+{
+    private InventoryManager $inventoryManager;
+    private ConsoleView $view;
+    private Menu $mainMenu;
+
+    public function __construct(InventoryManager $inventoryManager, ConsoleView $view, Menu $mainMenu) { /* ... */ }
+
+    public function run(): void
+    {
+        while (true) {
+            $this->mainMenu->mostrar();
+            $opcion = $this->mainMenu->obtenerSeleccion();
+
+            switch ($opcion) {
+                case 1: // Añadir Repuesto
+                    $this->addSparePart();
+                    break;
+                // ... otros casos ...
+            }
+        }
+    }
+
+    private function addSparePart(): void
+    {
+        $this->view->displayMessage("--- Añadir Nuevo Repuesto ---");
+        $availableTypes = ['Moto', 'Camion', 'Camioneta'];
+        $tipo = $this->view->displayMenuAndGetChoice("Tipo de repuesto:", $availableTypes);
+        $nombre = $this->view->displayInputPrompt("Nombre: ");
+        // ... obtiene más datos de la Vista ...
+
+        try {
+            $this->inventoryManager->addSparePart($tipo, $nombre, /* ... */);
+            $this->view->displayMessage("Repuesto añadido con éxito.");
+        } catch (\Exception $e) {
+            $this->view->displayError($e->getMessage());
+        }
+    }
+}
+        </code></pre>
+        <p><strong>Impacto MVC:</strong> <code>InventoryController</code> es el <strong>Controlador</strong>. Maneja la entrada del usuario, coordina las interacciones entre el Modelo y la Vista, y controla el flujo de la aplicación.</p>
+
+        <div class="section-divider"></div>
+
+        <h2>4. Punto de Entrada de la Aplicación (<code>Main.php</code>)</h2>
+        <h3>Antes: Lógica de inicialización y ejecución mezclada</h3>
+        <p>El archivo principal podría haber contenido una mezcla de inicialización, lógica de negocio y bucles de interacción.</p>
+
+        <h3>Después: <code>Main.php</code> como Bootstrap</h3>
+        <p>Ahora, <code>Main.php</code> se encarga únicamente de inicializar todas las dependencias (Modelo, Vista, Controlador) y de iniciar el ciclo de ejecución del Controlador. Es un punto de entrada limpio y desacoplado.</p>
+        <pre><code>
+// src/Core/Main.php
+// ... require_once de todas las clases ...
+
+use App\Core\Menu;
+use App\Core\InventoryManager;
+use App\Core\ConsoleMenuRenderer;
+use App\Controllers\InventoryController;
+use App\Views\ConsoleView;
+use App\Database\InMemoryDatabase;
+use App\Factories\RepuestoFactory;
+
+$db = InMemoryDatabase::getInstance();
+$repuestoFactory = new RepuestoFactory();
+$inventoryManager = new InventoryManager($db, $repuestoFactory);
+$consoleRenderer = new ConsoleMenuRenderer();
+$consoleView = new ConsoleView();
+$mainMenu = Menu::createMainMenu($inventoryManager, $consoleRenderer);
+
+$controller = new InventoryController($inventoryManager, $consoleView, $mainMenu);
+$controller->run(); // Inicia el ciclo de la aplicación
+        </code></pre>
+        <p><strong>Impacto MVC:</strong> <code>Main.php</code> actúa como el orquestador de alto nivel que ensambla los componentes MVC y pone la aplicación en marcha.</p>
+
+        <div class="note">
+            <strong>Conclusión:</strong> Esta refactorización ha transformado una aplicación potencialmente monolítica en una estructura MVC clara, donde cada componente tiene una responsabilidad única. Esto facilita la comprensión, el mantenimiento y la escalabilidad del código.
+        </div>
+    </div>
+</body>
+</html>
