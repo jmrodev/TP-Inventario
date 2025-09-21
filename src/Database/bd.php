@@ -1,10 +1,12 @@
 <?php
 
-require_once 'Repuesto.php';
-require_once 'RepuestoMoto.php';
-require_once 'RepuestoCamion.php';
-require_once 'RepuestoCamioneta.php';
-require_once 'RepuestoFactory.php';
+namespace App\Database;
+
+use App\Models\Repuesto;
+use App\Models\RepuestoMoto;
+use App\Models\RepuestoCamion;
+use App\Models\RepuestoCamioneta;
+use App\Factories\RepuestoFactory;
 
 class InMemoryDatabase {
     
@@ -20,7 +22,7 @@ class InMemoryDatabase {
     }
 
     private function seedData() {
-        // Create a temporary factory instance for seeding
+        
         $factory = new RepuestoFactory();
 
         $repuesto1 = $factory->crearRepuesto('Moto', [

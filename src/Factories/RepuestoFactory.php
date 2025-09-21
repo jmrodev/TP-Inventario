@@ -1,9 +1,11 @@
 <?php
 
-require_once 'Repuesto.php';
-require_once 'RepuestoMoto.php';
-require_once 'RepuestoCamion.php';
-require_once 'RepuestoCamioneta.php';
+namespace App\Factories;
+
+use App\Models\Repuesto;
+use App\Models\RepuestoMoto;
+use App\Models\RepuestoCamion;
+use App\Models\RepuestoCamioneta;
 
 class RepuestoFactory {
 

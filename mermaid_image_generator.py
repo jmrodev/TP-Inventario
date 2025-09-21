@@ -2,7 +2,7 @@ import glob
 import subprocess
 import os
 
-def generate_mermaid_images(base_input_directory, output_directory, output_format="png", theme="dark"):
+def generate_mermaid_images(base_input_directory, output_directory, output_format="png", theme="dark", puppeteer_path=None):
     """
     Finds all .mmd files in the specified input directory and generates an image
     for each using mermaid.cli (mmdc).
@@ -33,8 +33,8 @@ def generate_mermaid_images(base_input_directory, output_directory, output_forma
 
     print(f"DEBUG: Input directory for glob: '{input_directory}'")
 
-    # 2. Find all .mmd files
-    mmd_files = glob.glob(os.path.join(input_directory, "*.mmd"))
+    # 2. Find all .mmd files recursively
+    mmd_files = glob.glob(os.path.join(input_directory, "**", "*.mmd"), recursive=True)
 
     if not mmd_files:
         print(f"No .mmd files found in '{input_directory}'.")
@@ -43,14 +43,11 @@ def generate_mermaid_images(base_input_directory, output_directory, output_forma
     print(f"Found {len(mmd_files)} .mmd file(s) in '{input_directory}'.")
 
     # --- BEGIN PUPPETEER_EXECUTABLE_PATH CONFIGURATION ---
-    # Path to the chrome-headless-shell installed by npx puppeteer browsers install
-    # This path was derived from the user's previous output.
-    puppeteer_executable_path = "/home/jmro/.cache/puppeteer/chrome-headless-shell/linux-140.0.7339.82/chrome-headless-shell-linux64/chrome-headless-shell"
-
     # Create a copy of the current environment variables
     env = os.environ.copy()
-    # Set the PUPPETEER_EXECUTABLE_PATH environment variable
-    env["PUPPETEER_EXECUTABLE_PATH"] = puppeteer_executable_path
+    # Set the PUPPETEER_EXECUTABLE_PATH environment variable if puppeteer_path is provided
+    if puppeteer_path:
+        env["PUPPETEER_EXECUTABLE_PATH"] = puppeteer_path
     # --- END PUPPETEER_EXECUTABLE_PATH CONFIGURATION ---
 
     # 3. Generate image for each .mmd file
@@ -94,4 +91,6 @@ if __name__ == "__main__":
 
     print(f"DEBUG: script_dir (base input) before function call: '{script_dir}'")
 
-    generate_mermaid_images(base_input_directory=script_dir, output_directory=output_dir)
+    puppeteer_executable_path = "/home/jmro/.cache/puppeteer/chrome-headless-shell/linux-140.0.7339.82/chrome-headless-shell-linux64/chrome-headless-shell"
+
+    generate_mermaid_images(base_input_directory=script_dir, output_directory=output_dir, puppeteer_path=puppeteer_executable_path)

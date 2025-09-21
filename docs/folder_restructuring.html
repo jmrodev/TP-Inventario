@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentación de Reestructuración de Carpetas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #0056b3;
+        }
+        pre {
+            background: #eee;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: "Courier New", Courier, monospace;
+            background-color: #e9e9e9;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Documentación de Reestructuración de Carpetas del Proyecto TP-Inventario</h1>
+
+        <p>Este documento detalla los cambios realizados en la estructura de directorios del proyecto TP-Inventario, con el objetivo de mejorar la organización, la modularidad y la adherencia a los principios de la Programación Orientada a Objetos (POO).</p>
+
+        <h2>Estructura Anterior (Asumida)</h2>
+        <p>Antes de la reestructuración, se asume que los archivos del proyecto estaban distribuidos de una manera menos organizada, posiblemente con muchos archivos PHP en el directorio raíz o en subdirectorios menos específicos. Esto dificultaba la escalabilidad y el mantenimiento del código.</p>
+        <pre>
+/TP-Inventario/
+├───bd.php
+├───Repuesto.php
+├───RepuestoCamion.php
+├───RepuestoCamioneta.php
+├───RepuestoMoto.php
+├───Mostrar.php
+└───... (otros archivos)
+        </pre>
+
+        <h2>Nueva Estructura de Carpetas</h2>
+        <p>La nueva estructura se ha diseñado siguiendo un enfoque más modular y basado en responsabilidades, facilitando la identificación de los componentes del sistema y su mantenimiento.</p>
+        <pre>
+/TP-Inventario/
+├───.gemini/
+├───.git/
+├───docs/
+│   ├───... (archivos de documentación)
+│   └───folder_restructuring.html (este archivo)
+└───src/
+    ├───Core/
+    │   ├───ConsoleMenuRenderer.php
+    │   ├───InventoryManager.php
+    │   ├───Main.php
+    │   ├───Menu.php
+    │   └───MenuRendererInterface.php
+    ├───Database/
+    │   └───bd.php
+    ├───Factories/
+    │   └───RepuestoFactory.php
+    └───Models/
+        ├───Repuesto.php
+        ├───RepuestoCamion.php
+        ├───RepuestoCamioneta.php
+        └───RepuestoMoto.php
+        </pre>
+
+        <h2>Justificación de los Cambios</h2>
+        <p>La reestructuración se llevó a cabo por las siguientes razones principales:</p>
+        <ul>
+            <li><strong>Separación de Responsabilidades (SRP):</strong> Cada directorio ahora agrupa archivos con responsabilidades similares, lo que mejora la claridad y reduce el acoplamiento.</li>
+            <li><strong>Modularidad:</strong> El código está organizado en módulos lógicos (Core, Database, Factories, Models), lo que facilita la comprensión, el desarrollo y la prueba de componentes individuales.</li>
+            <li><strong>Escalabilidad:</strong> La nueva estructura permite añadir nuevas funcionalidades o tipos de repuestos de manera más sencilla y sin afectar otras partes del sistema.</li>
+            <li><strong>Mantenimiento:</strong> Al tener una estructura clara, es más fácil localizar y modificar archivos específicos, reduciendo el riesgo de introducir errores.</li>
+            <li><strong>Adherencia a Estándares:</strong> Se busca adoptar una estructura más cercana a las convenciones comunes en proyectos PHP modernos, lo que facilita la colaboración y la incorporación de nuevas herramientas.</li>
+        </ul>
+
+        <h3>Detalle de los Nuevos Directorios:</h3>
+        <ul>
+            <li><code>src/</code>: Contiene todo el código fuente de la aplicación.</li>
+            <li><code>src/Core/</code>: Aloja las clases fundamentales del sistema, como la lógica del menú, el gestor de inventario y las interfaces.</li>
+            <li><code>src/Database/</code>: Contiene la lógica relacionada con la persistencia de datos, como la clase <code>InMemoryDatabase</code> (anteriormente <code>bd.php</code>).</li>
+            <li><code>src/Factories/</code>: Contendrá las clases encargadas de la creación de objetos, siguiendo el patrón Factory para la creación de repuestos.</li>
+            <li><code>src/Models/</code>: Contiene las definiciones de las clases de los modelos de datos, como <code>Repuesto</code> y sus subclases (<code>RepuestoCamion</code>, <code>RepuestoCamioneta</code>, <code>RepuestoMoto</code>).</li>
+            <li><code>docs/</code>: Contiene toda la documentación del proyecto, incluyendo este archivo.</li>
+        </ul>
+
+        <p>Esta nueva organización sienta las bases para un desarrollo más robusto y mantenible del proyecto TP-Inventario.</p>
+    </div>
+</body>
+</html>

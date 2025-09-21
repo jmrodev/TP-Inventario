@@ -1,8 +1,11 @@
 <?php
 
-require_once 'bd.php';
-require_once 'RepuestoFactory.php';
-require_once 'Repuesto.php'; // Asegurarse de que Repuesto.php esté incluido para el tipo Repuesto
+namespace App\Core;
+
+use App\Database\InMemoryDatabase;
+use App\Factories\RepuestoFactory;
+use App\Models\Repuesto;
+use App\Models\RepuestoCamioneta;
 
 class InventoryManager {
     private $db;

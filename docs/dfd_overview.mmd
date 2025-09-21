@@ -9,7 +9,7 @@ flowchart TD
     processP4(Editar Repuesto)
     processP5(Eliminar Repuesto)
     dataStoreDS1[(Base de Datos de Inventario)]
-    dataStoreDS2[(Fábrica de Repuestos)]
+    dataStoreDS2[(RepuestoFactory)]
 
     externalUser --> |Selección de Opción| processP1
     processP1 --> |Mostrar Menú, Resultado de Acción| externalUser

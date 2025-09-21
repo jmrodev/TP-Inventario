@@ -1,6 +1,8 @@
 <?php 
 
-include_once 'Repuesto.php';
+namespace App\Models;
+
+use App\Models\Repuesto;
 
 class RepuestoCamioneta extends Repuesto {
   private $traccion;
