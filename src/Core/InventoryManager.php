@@ -16,44 +16,8 @@ class InventoryManager {
         $this->repuestoFactory = $repuestoFactory;
     }
 
-    public function addSparePart() {
-        echo "--- Añadir Nuevo Repuesto ---
-";
-        echo "Seleccione el tipo de repuesto:
-";
-        echo "1. Moto
-";
-        echo "2. Camion
-";
-        echo "3. Camioneta
-";
-        echo "Ingrese su opción: ";
-        $tipoOpcion = trim(fgets(STDIN));
-
-        $tipoRepuesto = '';
-        switch ($tipoOpcion) {
-            case '1': $tipoRepuesto = 'Moto'; break;
-            case '2': $tipoRepuesto = 'Camion'; break;
-            case '3': $tipoRepuesto = 'Camioneta'; break;
-            default:
-                echo "Opción de tipo de repuesto inválida.
-";
-                return;
-        }
-
-        echo "Nombre: ";
-        $nombre = trim(fgets(STDIN));
-        echo "Descripción: ";
-        $descripcion = trim(fgets(STDIN));
-        echo "Precio: ";
-        $precio = (float)trim(fgets(STDIN));
-        echo "Cantidad: ";
-        $cantidad = (int)trim(fgets(STDIN));
-        echo "Marca: ";
-        $marca = trim(fgets(STDIN));
-        echo "Modelo: ";
-        $modelo = trim(fgets(STDIN));
-
+    public function addSparePart(string $tipoRepuesto, string $nombre, string $descripcion, float $precio, int $cantidad, string $marca, string $modelo, array $additionalData = []): Repuesto
+    {
         $datosRepuesto = [
             'nombre' => $nombre,
             'descripcion' => $descripcion,
@@ -63,125 +27,57 @@ class InventoryManager {
             'modelo' => $modelo,
         ];
 
-        if ($tipoRepuesto === 'Camioneta') {
-            echo "Tracción (ej: 4x2, 4x4): ";
-            $datosRepuesto['traccion'] = trim(fgets(STDIN));
+        if ($tipoRepuesto === 'Camioneta' && isset($additionalData['traccion'])) {
+            $datosRepuesto['traccion'] = $additionalData['traccion'];
         }
 
         $repuesto = $this->repuestoFactory->crearRepuesto($tipoRepuesto, $datosRepuesto);
 
         if ($repuesto) {
             $this->db->addRepuesto($repuesto);
-            echo "Repuesto de " . $tipoRepuesto . " añadido con éxito (ID: " . $repuesto->getId() . ").
-";
+            return $repuesto;
         } else {
-            echo "No se pudo crear el repuesto.
-";
+            throw new \Exception("No se pudo crear el repuesto de tipo {$tipoRepuesto}.");
         }
     }
 
-    public function listSpareParts() {
-        echo "--- Listado de Repuestos ---
-";
-        $repuestos = $this->db->getAllRepuestos();
-        if (empty($repuestos)) {
-            echo "No hay repuestos en el inventario.
-";
-            return;
-        }
-
-        foreach ($repuestos as $repuesto) {
-            echo "--------------------------------------
-";
-            echo "ID: " . $repuesto->getId() . "
-";
-            echo "Nombre: " . $repuesto->getNombre() . "
-";
-            echo "Descripción: " . $repuesto->getDescripcion() . "
-";
-            echo "Precio: " . $repuesto->getPrecio() . "
-";
-            echo "Cantidad: " . $repuesto->getCantidad() . "
-";
-            echo "Categoría: " . $repuesto->getCategoria() . "
-";
-            echo "Marca: " . $repuesto->getMarca() . "
-";
-            echo "Modelo: " . $repuesto->getModelo() . "
-";
-            if ($repuesto instanceof RepuestoCamioneta) {
-                echo "Tracción: " . $repuesto->getTraccion() . "
-";
-            }
-        }
-        echo "--------------------------------------
-";
+    public function getAllSpareParts(): array
+    {
+        return $this->db->getAllRepuestos();
     }
 
-    public function editSparePart() {
-        echo "--- Editar Repuesto ---\n";
-        echo "Ingrese el ID del repuesto a editar: ";
-        $id = (int)trim(fgets(STDIN));
-
+    public function updateSparePart(int $id, array $updatedData): bool
+    {
         $repuesto = $this->db->getRepuestoById($id);
 
         if (!$repuesto) {
-            echo "Repuesto con ID " . $id . " no encontrado.\n";
-            return;
+            throw new \Exception("Repuesto con ID {$id} no encontrado.");
         }
 
-        echo "Repuesto actual: " . $repuesto->getNombre() . " (ID: " . $repuesto->getId() . ")\n";
-        echo "Ingrese nuevos valores (deje en blanco para mantener el actual):\n";
+        if (isset($updatedData['nombre']) && !empty($updatedData['nombre'])) { $repuesto->setNombre($updatedData['nombre']); }
+        if (isset($updatedData['descripcion']) && !empty($updatedData['descripcion'])) { $repuesto->setDescripcion($updatedData['descripcion']); }
+        if (isset($updatedData['precio']) && !empty($updatedData['precio'])) { $repuesto->setPrecio((float)$updatedData['precio']); }
+        if (isset($updatedData['cantidad']) && !empty($updatedData['cantidad'])) { $repuesto->setCantidad((int)$updatedData['cantidad']); }
+        if (isset($updatedData['marca']) && !empty($updatedData['marca'])) { $repuesto->setMarca($updatedData['marca']); }
+        if (isset($updatedData['modelo']) && !empty($updatedData['modelo'])) { $repuesto->setModelo($updatedData['modelo']); }
 
-        echo "Nombre (actual: " . $repuesto->getNombre() . "): ";
-        $nombre = trim(fgets(STDIN));
-        if (!empty($nombre)) { $repuesto->setNombre($nombre); }
-
-        echo "Descripción (actual: " . $repuesto->getDescripcion() . "): ";
-        $descripcion = trim(fgets(STDIN));
-        if (!empty($descripcion)) { $repuesto->setDescripcion($descripcion); }
-
-        echo "Precio (actual: " . $repuesto->getPrecio() . "): ";
-        $precio = trim(fgets(STDIN));
-        if (!empty($precio)) { $repuesto->setPrecio((float)$precio); }
-
-        echo "Cantidad (actual: " . $repuesto->getCantidad() . "): ";
-        $cantidad = trim(fgets(STDIN));
-        if (!empty($cantidad)) { $repuesto->setCantidad((int)$cantidad); }
-
-        echo "Marca (actual: " . $repuesto->getMarca() . "): ";
-        $marca = trim(fgets(STDIN));
-        if (!empty($marca)) { $repuesto->setMarca($marca); }
-
-        echo "Modelo (actual: " . $repuesto->getModelo() . "): ";
-        $modelo = trim(fgets(STDIN));
-        if (!empty($modelo)) { $repuesto->setModelo($modelo); }
-
-        if ($repuesto instanceof RepuestoCamioneta) {
-            echo "Tracción (actual: " . $repuesto->getTraccion() . "): ";
-            $traccion = trim(fgets(STDIN));
-            if (!empty($traccion)) { $repuesto->setTraccion($traccion); }
+        if ($repuesto instanceof RepuestoCamioneta && isset($updatedData['traccion']) && !empty($updatedData['traccion'])) {
+            $repuesto->setTraccion($updatedData['traccion']);
         }
 
-        echo "Repuesto con ID " . $id . " actualizado con éxito.\n";
+        return true;
     }
 
-    public function deleteSparePart() {
-        echo "--- Eliminar Repuesto ---\\n";
-        echo "Ingrese el ID del repuesto a eliminar: ";
-        $id = (int)trim(fgets(STDIN));
-
+    public function deleteSparePart(int $id): bool
+    {
         if ($this->db->removeRepuesto($id)) {
-            echo "Repuesto con ID " . $id . " eliminado con éxito.\\n";
+            return true;
         } else {
-            echo "Repuesto con ID " . $id . " no encontrado.\\n";
+            throw new \Exception("Repuesto con ID {$id} no encontrado.");
         }
     }
 
-    public function exitApplication() {
-        echo "Saliendo de la aplicación...
-";
-    }
+    
 }
 
 ?>

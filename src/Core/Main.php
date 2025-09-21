@@ -16,6 +16,8 @@ require_once BASE_PATH . 'src/Core/InventoryManager.php';
 use App\Core\Menu;
 use App\Core\InventoryManager;
 use App\Core\ConsoleMenuRenderer;
+use App\Controllers\InventoryController;
+use App\Views\ConsoleView;
 use App\Database\InMemoryDatabase;
 use App\Factories\RepuestoFactory;
 
@@ -25,11 +27,11 @@ $repuestoFactory = new RepuestoFactory();
 $inventoryManager = new InventoryManager($db, $repuestoFactory);
 
 $consoleRenderer = new ConsoleMenuRenderer();
+$consoleView = new ConsoleView();
 
-$menuPrincipal = Menu::createMainMenu($inventoryManager, $consoleRenderer);
+$mainMenu = Menu::createMainMenu($inventoryManager, $consoleRenderer);
 
-$menuPrincipal->iniciar();
-
-echo "¡Aplicación finalizada!\n";
+$controller = new InventoryController($inventoryManager, $consoleView, $mainMenu);
+$controller->run();
 
 ?>

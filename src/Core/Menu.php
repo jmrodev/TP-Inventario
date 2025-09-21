@@ -49,18 +49,7 @@ class Menu {
         return true;
     }
 
-    public function iniciar() {
-        $continuarMenu = true;
-
-        do {
-            $this->mostrar();
-            $seleccion = $this->obtenerSeleccion();
-            $continuarMenu = $this->ejecutarOpcion($seleccion);
-        } while ($continuarMenu);
-
-        echo "Saliendo del menú...
-";
-    }
+    
 
     
     public static function createMainMenu(InventoryManager $manager, MenuRendererInterface $renderer): self {
