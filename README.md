@@ -44,22 +44,23 @@ El proyecto sigue una estructura modular para facilitar la organización y el ma
 *   `src/Views/`: Clases para la presentación de la información en la consola.
 *   `docs/`: Documentación detallada del proyecto en formato HTML.
 
-## Documentación Detallada
+## Documentación
 
-Para una comprensión más profunda del diseño, la arquitectura y el funcionamiento interno del proyecto, consulta la documentación HTML completa:
+Para una comprensión más profunda del diseño, la arquitectura y el funcionamiento interno del proyecto, consulta los siguientes documentos:
 
-*   **Visión General del Proyecto:** [docs/aboutProject/project_overview.html](docs/aboutProject/project_overview.html)
-*   **Explicación del Patrón MVC:** [docs/aboutProject/mvc_explanation.html](docs/aboutProject/mvc_explanation.html)
-*   **Detalles de los Objetos Repuesto:** [docs/aboutProject/Repuesto_Objects_Explanation.html](docs/aboutProject/Repuesto_Objects_Explanation.html)
-*   **Comparación de Menús:** [docs/aboutProject/comparacion_menus.html](docs/aboutProject/comparacion_menus.html)
-*   **Explicación del Menú:** [docs/aboutProject/Menu_Explicacion.html](docs/aboutProject/Menu_Explicacion.html)
-*   **Gestión de Menús:** [docs/aboutProject/Menu_Management_Explanation.html](docs/aboutProject/Menu_Management_Explanation.html)
-*   **Detalles de Refactorización MVC:** [docs/aboutProject/mvc_refactoring_details.html](docs/aboutProject/mvc_refactoring_details.html)
-*   **Refactorización del Menú de Inventario:** [docs/aboutProject/refactorizacion_menu_inventario.html](docs/aboutProject/refactorizacion_menu_inventario.html)
-*   **Patrón Singleton Manual:** [docs/aboutProject/Singleton_Pattern_Manual.html](docs/aboutProject/Singleton_Pattern_Manual.html)
-*   **Reestructuración de Carpetas:** [docs/aboutProject/folder_restructuring.html](docs/aboutProject/folder_restructuring.html)
-*   **DFD Overview:** [docs/aboutProject/dfd_overview.html](docs/aboutProject/dfd_overview.html)
-*   **Explicación de BASE_PATH:** [docs/aboutProject/base_path_explanation.html](docs/aboutProject/base_path_explanation.html)
+*   [Explicación de la Ruta Base (`base_path_explanation.md`)](docs/markdown/base_path_explanation.md)
+*   [Comparación de Menús (`comparacion_menus.md`)](docs/markdown/comparacion_menus.md)
+*   [Vista General del DFD (`dfd_overview.md`)](docs/markdown/dfd_overview.md)
+*   [Reestructuración de Carpetas (`folder_restructuring.md`)](docs/markdown/folder_restructuring.md)
+*   [Explicación del Menú (`Menu_Explicacion.md`)](docs/markdown/Menu_Explicacion.md)
+*   [Explicación de la Gestión de Menús (`Menu_Management_Explanation.md`)](docs/markdown/Menu_Management_Explanation.md)
+*   [Explicación de MVC (`mvc_explanation.md`)](docs/markdown/mvc_explanation.md)
+*   [Detalles de la Refactorización a MVC (`mvc_refactoring_details.md`)](docs/markdown/mvc_refactoring_details.md)
+*   [Vista General del Proyecto (`project_overview.md`)](docs/markdown/project_overview.md)
+*   [Refactorización del Menú de Inventario (`refactorizacion_menu_inventario.md`)](docs/markdown/refactorizacion_menu_inventario.md)
+*   [Explicación de los Objetos Repuesto (`Repuesto_Objects_Explanation.md`)](docs/markdown/Repuesto_Objects_Explanation.md)
+*   [Manual del Patrón Singleton (`Singleton_Pattern_Manual.md`)](docs/markdown/Singleton_Pattern_Manual.md)
+
 
 ## Créditos
 
