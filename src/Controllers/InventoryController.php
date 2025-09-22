@@ -3,19 +3,22 @@
 namespace App\Controllers;
 
 use App\Views\ConsoleView;
-use App\Core\InventoryManager;
 use App\Core\Menu; // We will adjust Menu to work with Controller
 use App\Models\Repuesto; // For type hinting
+use App\Models\RepuestoMoto;
+use App\Models\RepuestoCamion;
+use App\Models\RepuestoCamioneta;
+use App\Database\InMemoryDatabase;
 
 class InventoryController
 {
-    private InventoryManager $inventoryManager;
+    private InMemoryDatabase $db; // Direct dependency on InMemoryDatabase
     private ConsoleView $view;
     private Menu $mainMenu;
 
-    public function __construct(InventoryManager $inventoryManager, ConsoleView $view, Menu $mainMenu)
+    public function __construct(InMemoryDatabase $db, ConsoleView $view, Menu $mainMenu)
     {
-        $this->inventoryManager = $inventoryManager;
+        $this->db = $db;
         $this->view = $view;
         $this->mainMenu = $mainMenu;
     }
@@ -66,9 +69,39 @@ class InventoryController
             $additionalData['traccion'] = $this->view->displayInputPrompt("Tracción (4x2, 4x4): ");
         }
 
+        $repuesto = null;
+        switch ($tipo) {
+            case 'Moto':
+                $repuesto = new RepuestoMoto(
+                    null, // ID se asigna en addRepuesto
+                    $nombre, $descripcion, $precio, $cantidad, $marca, $modelo
+                );
+                break;
+            case 'Camion':
+                $repuesto = new RepuestoCamion(
+                    null, // ID se asigna en addRepuesto
+                    $nombre, $descripcion, $precio, $cantidad, $marca, $modelo
+                );
+                break;
+            case 'Camioneta':
+                $traccion = $additionalData['traccion'] ?? null;
+                $repuesto = new RepuestoCamioneta(
+                    null, // ID se asigna en addRepuesto
+                    $nombre, $descripcion, $precio, $cantidad, $traccion, $marca, $modelo
+                );
+                break;
+            default:
+                $this->view->displayError("Tipo de repuesto desconocido: {$tipo}.");
+                return;
+        }
+
         try {
-            $this->inventoryManager->addSparePart($tipo, $nombre, $descripcion, $precio, $cantidad, $marca, $modelo, $additionalData);
-            $this->view->displayMessage("Repuesto añadido con éxito.");
+            if ($repuesto) {
+                $this->db->addRepuesto($repuesto); // Direct call to InMemoryDatabase
+                $this->view->displayMessage("Repuesto añadido con éxito.");
+            } else {
+                $this->view->displayError("No se pudo crear el repuesto.");
+            }
         } catch (\Exception $e) {
             $this->view->displayError($e->getMessage());
         }
@@ -76,14 +109,14 @@ class InventoryController
 
     private function listSpareParts(): void
     {
-        $spareParts = $this->inventoryManager->getAllSpareParts();
+        $spareParts = $this->db->getAllRepuestos(); // Direct call to InMemoryDatabase
         $this->view->displaySparePartsList($spareParts);
     }
 
     private function editSparePart(): void
     {
         $id = (int) $this->view->displayInputPrompt("Ingrese el ID del repuesto a editar: ");
-        $existingSparePart = $this->inventoryManager->getSparePartById($id);
+        $existingSparePart = $this->db->getRepuestoById($id); // Direct call to InMemoryDatabase
 
         if (!$existingSparePart) {
             $this->view->displayError("Repuesto con ID {$id} no encontrado.");
@@ -100,8 +133,7 @@ class InventoryController
             'categoria' => $existingSparePart->getCategoria(),
             'marca' => $existingSparePart->getMarca(),
             'modelo' => $existingSparePart->getModelo(),
-            // Add specific properties for Camioneta if needed
-            'traccion' => ($existingSparePart instanceof \App\Models\RepuestoCamioneta) ? $existingSparePart->getTraccion() : 'N/A'
+            'traccion' => ($existingSparePart instanceof RepuestoCamioneta) ? $existingSparePart->getTraccion() : 'N/A'
         ]);
 
         $nombre = $this->view->displayInputPrompt("Nuevo Nombre (actual: {$existingSparePart->getNombre()}): ");
@@ -120,13 +152,23 @@ class InventoryController
             'modelo' => $modelo,
         ];
 
-        if ($existingSparePart instanceof \App\Models\RepuestoCamioneta) {
+        if ($existingSparePart instanceof RepuestoCamioneta) {
             $traccion = $this->view->displayInputPrompt("Nueva Tracción (actual: {$existingSparePart->getTraccion()}): ");
             $updatedData['traccion'] = $traccion;
         }
 
         try {
-            $this->inventoryManager->updateSparePart($id, $updatedData);
+            // Logic for updating the spare part directly in the controller
+            if (isset($updatedData['nombre']) && !empty($updatedData['nombre'])) { $existingSparePart->setNombre($updatedData['nombre']); }
+            if (isset($updatedData['descripcion']) && !empty($updatedData['descripcion'])) { $existingSparePart->setDescripcion($updatedData['descripcion']); }
+            if (isset($updatedData['precio']) && !empty($updatedData['precio'])) { $existingSparePart->setPrecio((float)$updatedData['precio']); }
+            if (isset($updatedData['cantidad']) && !empty($updatedData['cantidad'])) { $existingSparePart->setCantidad((int)$updatedData['cantidad']); }
+            if (isset($updatedData['marca']) && !empty($updatedData['marca'])) { $existingSparePart->setMarca($updatedData['marca']); }
+            if (isset($updatedData['modelo']) && !empty($updatedData['modelo'])) { $existingSparePart->setModelo($updatedData['modelo']); }
+
+            if ($existingSparePart instanceof RepuestoCamioneta && isset($updatedData['traccion']) && !empty($updatedData['traccion'])) {
+                $existingSparePart->setTraccion($updatedData['traccion']);
+            }
             $this->view->displayMessage("Repuesto ID {$id} actualizado con éxito.");
         } catch (\Exception $e) {
             $this->view->displayError($e->getMessage());
@@ -137,8 +179,11 @@ class InventoryController
     {
         $id = (int) $this->view->displayInputPrompt("Ingrese el ID del repuesto a eliminar: ");
         try {
-            $this->inventoryManager->deleteSparePart($id);
-            $this->view->displayMessage("Repuesto ID {$id} eliminado con éxito.");
+            if ($this->db->removeRepuesto($id)) { // Direct call to InMemoryDatabase
+                $this->view->displayMessage("Repuesto ID {$id} eliminado con éxito.");
+            } else {
+                throw new \Exception("Repuesto con ID {$id} no encontrado.");
+            }
         } catch (\Exception $e) {
             $this->view->displayError($e->getMessage());
         }

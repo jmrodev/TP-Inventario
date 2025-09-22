@@ -7,33 +7,33 @@ require_once BASE_PATH . 'src/Models/Repuesto.php';
 require_once BASE_PATH . 'src/Models/RepuestoMoto.php';
 require_once BASE_PATH . 'src/Models/RepuestoCamion.php';
 require_once BASE_PATH . 'src/Models/RepuestoCamioneta.php';
-require_once BASE_PATH . 'src/Factories/RepuestoFactory.php';
+require_once BASE_PATH . 'src/Core/Menu.php';
 require_once BASE_PATH . 'src/Core/MenuRendererInterface.php';
 require_once BASE_PATH . 'src/Core/ConsoleMenuRenderer.php';
-require_once BASE_PATH . 'src/Core/Menu.php';
-require_once BASE_PATH . 'src/Core/InventoryManager.php';
 require_once BASE_PATH . 'src/Views/ConsoleView.php';
 require_once BASE_PATH . 'src/Controllers/InventoryController.php';
 
 use App\Core\Menu;
-use App\Core\InventoryManager;
 use App\Core\ConsoleMenuRenderer;
 use App\Controllers\InventoryController;
 use App\Views\ConsoleView;
 use App\Database\InMemoryDatabase;
-use App\Factories\RepuestoFactory;
 
 $db = InMemoryDatabase::getInstance();
-$repuestoFactory = new RepuestoFactory();
-
-$inventoryManager = new InventoryManager($db, $repuestoFactory);
 
 $consoleRenderer = new ConsoleMenuRenderer();
 $consoleView = new ConsoleView();
 
-$mainMenu = Menu::createMainMenu($inventoryManager, $consoleRenderer);
+$menuOptions = [
+    1 => ['descripcion' => 'Añadir Repuesto'],
+    2 => ['descripcion' => 'Listar Repuestos'],
+    3 => ['descripcion' => 'Editar Repuesto'],
+    4 => ['descripcion' => 'Eliminar Repuesto'],
+    5 => ['descripcion' => 'Salir']
+];
+$mainMenu = new Menu("Menú Principal de Inventario", $menuOptions, $consoleRenderer);
 
-$controller = new InventoryController($inventoryManager, $consoleView, $mainMenu);
+$controller = new InventoryController($db, $consoleView, $mainMenu);
 $controller->run();
 
 ?>

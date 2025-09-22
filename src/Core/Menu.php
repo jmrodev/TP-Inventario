@@ -2,7 +2,6 @@
 
 namespace App\Core;
 
-use App\Core\InventoryManager;
 use App\Core\MenuRendererInterface;
 
 class Menu {
@@ -48,20 +47,5 @@ class Menu {
         }
         return true;
     }
-
-    
-
-    
-    public static function createMainMenu(InventoryManager $manager, MenuRendererInterface $renderer): self {
-        $opciones = [
-            1 => ['descripcion' => 'Añadir Repuesto', 'accion' => [$manager, 'addSparePart']],
-            2 => ['descripcion' => 'Listar Repuestos', 'accion' => [$manager, 'listSpareParts']],
-            3 => ['descripcion' => 'Editar Repuesto', 'accion' => [$manager, 'editSparePart']],
-            4 => ['descripcion' => 'Eliminar Repuesto', 'accion' => [$manager, 'deleteSparePart']],
-            5 => ['descripcion' => 'Salir', 'accion' => [$manager, 'exitApplication']]
-        ];
-        return new self("Menú Principal de Inventario", $opciones, $renderer);
-    }
 }
 
-?>

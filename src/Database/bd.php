@@ -6,8 +6,6 @@ use App\Models\Repuesto;
 use App\Models\RepuestoMoto;
 use App\Models\RepuestoCamion;
 use App\Models\RepuestoCamioneta;
-use App\Factories\RepuestoFactory;
-
 class InMemoryDatabase {
     
     private static $instance = null;
@@ -22,38 +20,40 @@ class InMemoryDatabase {
     }
 
     private function seedData() {
-        
-        $factory = new RepuestoFactory();
 
-        $repuesto1 = $factory->crearRepuesto('Moto', [
-            'nombre' => 'Filtro de Aire Moto', 
-            'descripcion' => 'Filtro de aire de alto rendimiento para motos',
-            'precio' => 25.50, 
-            'cantidad' => 10, 
-            'marca' => 'K&N', 
-            'modelo' => 'Universal'
-        ]);
+
+        $repuesto1 = new RepuestoMoto(
+            null, // ID se asigna en addRepuesto
+            'Filtro de Aire Moto', 
+            'Filtro de aire de alto rendimiento para motos',
+            25.50, 
+            10, 
+            'K&N', 
+            'Universal'
+        );
         if ($repuesto1) $this->addRepuesto($repuesto1);
 
-        $repuesto2 = $factory->crearRepuesto('Camion', [
-            'nombre' => 'Pastillas de Freno Camion', 
-            'descripcion' => 'Pastillas de freno para camiones de carga pesada',
-            'precio' => 120.00, 
-            'cantidad' => 5, 
-            'marca' => 'Brembo', 
-            'modelo' => 'Serie 500'
-        ]);
+        $repuesto2 = new RepuestoCamion(
+            null, // ID se asigna en addRepuesto
+            'Pastillas de Freno Camion', 
+            'Pastillas de freno para camiones de carga pesada',
+            120.00, 
+            5, 
+            'Brembo', 
+            'Serie 500'
+        );
         if ($repuesto2) $this->addRepuesto($repuesto2);
 
-        $repuesto3 = $factory->crearRepuesto('Camioneta', [
-            'nombre' => 'Amortiguador Camioneta', 
-            'descripcion' => 'Amortiguador trasero para camioneta 4x4',
-            'precio' => 85.75, 
-            'cantidad' => 8, 
-            'marca' => 'Monroe', 
-            'modelo' => 'Hilux', 
-            'traccion' => '4x4'
-        ]);
+        $repuesto3 = new RepuestoCamioneta(
+            null, // ID se asigna en addRepuesto
+            'Amortiguador Camioneta', 
+            'Amortiguador trasero para camioneta 4x4',
+            85.75, 
+            8,
+            '4x4', // traccion
+            'Monroe', 
+            'Hilux'
+        );
         if ($repuesto3) $this->addRepuesto($repuesto3);
 
         echo "InMemoryDatabase: Datos de ejemplo cargados.\n";
