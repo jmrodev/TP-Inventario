@@ -1,11 +1,5 @@
 <?php
 
-namespace App\Database;
-
-use App\Models\Repuesto;
-use App\Models\RepuestoMoto;
-use App\Models\RepuestoCamion;
-use App\Models\RepuestoCamioneta;
 class InMemoryDatabase {
     
     private static $instance = null;
@@ -13,53 +7,13 @@ class InMemoryDatabase {
     private static $repuestos = [];
     private static $nextId = 1;
 
+    private static $clientes = [];
+    private static $nextIdCliente = 1;
+
     
     private function __construct() {
-        echo "InMemoryDatabase: Instancia creada y lista.\n";
-        $this->seedData();
     }
 
-    private function seedData() {
-
-
-        $repuesto1 = new RepuestoMoto(
-            null, // ID se asigna en addRepuesto
-            'Filtro de Aire Moto', 
-            'Filtro de aire de alto rendimiento para motos',
-            25.50, 
-            10, 
-            'K&N', 
-            'Universal'
-        );
-        if ($repuesto1) $this->addRepuesto($repuesto1);
-
-        $repuesto2 = new RepuestoCamion(
-            null, // ID se asigna en addRepuesto
-            'Pastillas de Freno Camion', 
-            'Pastillas de freno para camiones de carga pesada',
-            120.00, 
-            5, 
-            'Brembo', 
-            'Serie 500'
-        );
-        if ($repuesto2) $this->addRepuesto($repuesto2);
-
-        $repuesto3 = new RepuestoCamioneta(
-            null, // ID se asigna en addRepuesto
-            'Amortiguador Camioneta', 
-            'Amortiguador trasero para camioneta 4x4',
-            85.75, 
-            8,
-            '4x4', // traccion
-            'Monroe', 
-            'Hilux'
-        );
-        if ($repuesto3) $this->addRepuesto($repuesto3);
-
-        echo "InMemoryDatabase: Datos de ejemplo cargados.\n";
-    }
-
-    
     public static function getInstance(): InMemoryDatabase {
         if (self::$instance === null) {
             self::$instance = new self();
@@ -67,25 +21,29 @@ class InMemoryDatabase {
         return self::$instance;
     }
 
-    
-    public function addRepuesto($repuesto) {
+    public function agregarRepuesto($repuesto) {
         $repuesto->setId(self::$nextId++);
         self::$repuestos[$repuesto->getId()] = $repuesto;
         return $repuesto;
     }
 
-    
-    public function getRepuestoById($id) {
+    public function obtenerTodosLosRepuestos() {
+        return array_values(self::$repuestos);
+    }
+
+    public function obtenerRepuestoPorId($id) {
         return self::$repuestos[$id] ?? null;
     }
 
-    
-    public function getAllRepuestos() {
-        return self::$repuestos;
+    public function actualizarRepuesto($repuesto) {
+        if (isset(self::$repuestos[$repuesto->getId()])) {
+            self::$repuestos[$repuesto->getId()] = $repuesto;
+            return true;
+        }
+        return false;
     }
 
-    
-    public function removeRepuesto($id): bool {
+    public function eliminarRepuesto($id) {
         if (isset(self::$repuestos[$id])) {
             unset(self::$repuestos[$id]);
             return true;
@@ -93,16 +51,36 @@ class InMemoryDatabase {
         return false;
     }
 
-    
-    public static function clear() {
-        self::$repuestos = [];
-        self::$nextId = 1;
+    // Métodos CRUD para Cliente
+    public function agregarCliente($cliente) {
+        $cliente->setId(self::$nextIdCliente++);
+        self::$clientes[$cliente->getId()] = $cliente;
+        return $cliente;
     }
 
-    
-    private function __clone() {}
-    
-    public function __wakeup() {}
+    public function obtenerTodosLosClientes() {
+        return array_values(self::$clientes);
+    }
+
+    public function obtenerClientePorId($id) {
+        return self::$clientes[$id] ?? null;
+    }
+
+    public function actualizarCliente($cliente) {
+        if (isset(self::$clientes[$cliente->getId()])) {
+            self::$clientes[$cliente->getId()] = $cliente;
+            return true;
+        }
+        return false;
+    }
+
+    public function eliminarCliente($id) {
+        if (isset(self::$clientes[$id])) {
+            unset(self::$clientes[$id]);
+            return true;
+        }
+        return false;
+    }
 }
 
 ?>
