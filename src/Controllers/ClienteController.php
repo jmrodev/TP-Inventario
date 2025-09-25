@@ -26,6 +26,10 @@ class ClienteController
         if ($cliente) {
             return $cliente->eliminar();
         }
-        return false; // O manejar el error de otra manera
+        return false;
+    }
+    public function obtenerPorId($id)
+    {
+        return Cliente::obtenerPorId($id);
     }
 }

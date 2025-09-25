@@ -27,7 +27,12 @@ class RepuestoController
         if ($repuesto) {
             return $repuesto->eliminar();
         }
-        return false; 
+        return false;
     }
+    
+    public function obtenerPorId($id)
+    {
+        return Repuesto::obtenerPorId($id);
+    }
+
 }
-?> 

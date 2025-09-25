@@ -46,7 +46,6 @@ class Repuesto {
         $this->cantidad = $cantidad;
     }
 
-    // Métodos estáticos para interactuar con la base de datos
     public static function obtenerTodos() {
         return InMemoryDatabase::getInstance()->obtenerTodosLosRepuestos();
     }

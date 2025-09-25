@@ -1,5 +1,8 @@
 <?php
 
+include_once __DIR__ . '/../Models/Repuesto.php';
+include_once __DIR__ . '/../Models/Cliente.php';
+
 class InMemoryDatabase {
     
     private static $instance = null;
@@ -10,8 +13,20 @@ class InMemoryDatabase {
     private static $clientes = [];
     private static $nextIdCliente = 1;
 
+    private static $ventas = [];
+    private static $nextIdVenta = 1;
+
     
     private function __construct() {
+        self::$repuestos[1] = new Repuesto(1, "Filtro de Aceite", 12.99, 150);
+        self::$repuestos[2] = new Repuesto(2, "Batería", 75.00, 30);
+        self::$repuestos[3] = new Repuesto(3, "Neumático", 120.50, 80);
+        self::$nextId = 4;
+
+        self::$clientes[1] = new Cliente(1, "Ana Torres", "11111111");
+        self::$clientes[2] = new Cliente(2, "Pedro Gomez", "22222222");
+        self::$clientes[3] = new Cliente(3, "Laura Fernandez", "33333333");
+        self::$nextIdCliente = 4;
     }
 
     public static function getInstance(): InMemoryDatabase {
@@ -51,7 +66,6 @@ class InMemoryDatabase {
         return false;
     }
 
-    // Métodos CRUD para Cliente
     public function agregarCliente($cliente) {
         $cliente->setId(self::$nextIdCliente++);
         self::$clientes[$cliente->getId()] = $cliente;
@@ -77,6 +91,28 @@ class InMemoryDatabase {
     public function eliminarCliente($id) {
         if (isset(self::$clientes[$id])) {
             unset(self::$clientes[$id]);
+            return true;
+        }
+        return false;
+    }
+
+    public function addVenta($venta) {
+        $venta->setId(self::$nextIdVenta++);
+        self::$ventas[$venta->getId()] = $venta;
+        return $venta;
+    }
+
+    public function getAllVentas() {
+        return array_values(self::$ventas);
+    }
+
+    public function getVentaById($id) {
+        return self::$ventas[$id] ?? null;
+    }
+
+    public function removeVenta($id) {
+        if (isset(self::$ventas[$id])) {
+            unset(self::$ventas[$id]);
             return true;
         }
         return false;

@@ -1,16 +1,19 @@
 <?php
 include_once __DIR__ . '/../Database/bd.php';
+include_once __DIR__ . '/Venta.php'; // Include Venta model
 
 class Cliente {
 
     protected $id;
     protected $nombre;
     protected $dni;
+    protected $ventas = []; // New property
 
     public function __construct($id, $nombre, $dni) {
         $this->id = $id;
         $this->nombre = $nombre;
         $this->dni = $dni;
+        $this->ventas = []; // Initialize ventas
     }
 
     public function getId() {
@@ -37,7 +40,14 @@ class Cliente {
         $this->dni = $dni;
     }
 
-    // Métodos estáticos para interactuar con la base de datos
+    public function getVentas(): array {
+        return $this->ventas;
+    }
+
+    public function addVenta ($venta): void {
+        $this->ventas[] = $venta;
+    }
+
     public static function obtenerTodos() {
         return InMemoryDatabase::getInstance()->obtenerTodosLosClientes();
     }
